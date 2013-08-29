@@ -100,7 +100,7 @@ void Calc::invPoland()
 
         if ("+"==*it || "-"==*it || "*"==*it || "/"==*it)
         {
-            while (!s.empty() && !("*"==*it || "/"==*it) && ("+"==s.top() || "-"==s.top()))
+            while (!s.empty() && !(("*"==*it || "/"==*it) && ("+"==s.top() || "-"==s.top())))
             {
                 QString tmpOpt = s.pop();
                 q.enqueue(tmpOpt);
