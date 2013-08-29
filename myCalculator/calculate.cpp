@@ -28,8 +28,8 @@ QString Calc::getRes()
             {
                 double r = num1.toDouble()+num2.toDouble();
                 res = QString::number(r, 'g', 15);
-                qDebug() << "r" << r;
-                qDebug() << "res" << res;
+//                qDebug() << "r" << r;
+//                qDebug() << "res" << res;
             }
             else if ("-"==tmp)
             {
@@ -43,9 +43,10 @@ QString Calc::getRes()
             }
             else if ("/"==tmp)
             {
-                if (num2 == "0")
+                //qDebug() << num2.toDouble();
+                if (num2.toDouble()<1e-100 && num2.toDouble()>-1e-100)
                 {
-                    qDebug() << "mathError";
+                    //qDebug() << "mathError";
                     return mathError;
                 }
                 double r = num1.toDouble()/num2.toDouble();
@@ -100,8 +101,15 @@ void Calc::invPoland()
 
         if ("+"==*it || "-"==*it || "*"==*it || "/"==*it)
         {
-            while (!s.empty() && !(("*"==*it || "/"==*it) && ("+"==s.top() || "-"==s.top())))
+//            qDebug() << "stack is empty?" << s.isEmpty();
+//            qDebug() << "new opt: " << *it;
+            while (!s.isEmpty() && !(("*"==*it || "/"==*it) && ("+"==s.top() || "-"==s.top())))
             {
+                QString opt = s.top();
+                if ("="!=opt && "-"!=opt && "*"!=opt && "/"!=opt)
+                {
+                    break;
+                }
                 QString tmpOpt = s.pop();
                 q.enqueue(tmpOpt);
                 qDebug() << "en opt: " << tmpOpt;
@@ -126,7 +134,7 @@ void Calc::invPoland()
         }
 
     }
-    while (!s.empty())
+    while (!s.isEmpty())
     {
         QString tmp = s.pop();
         q.enqueue(tmp);
