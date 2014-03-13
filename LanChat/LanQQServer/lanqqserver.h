@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QList>
-#include "server.h"
+#include "tcpserver.h"
 #include "tcpclientsocket.h"
 
 namespace Ui {

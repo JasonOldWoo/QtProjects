@@ -16,8 +16,12 @@ void TcpClientSocket::slotReadData()
     while (bytesAvailable() > 0)
     {
         QByteArray ba = readAll();
-
-        emit signalMsg(ba.data(), (uint)ba.length());
+        if (ba.length())
+        {
+            char *inbuf = new char[ba.length()];
+            memcpy(inbuf, ba.data(), ba.length());
+            emit signalMsg(inbuf, (uint)ba.length());
+        }
     }
 }
 

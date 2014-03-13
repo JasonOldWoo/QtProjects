@@ -14,13 +14,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         lanqqserver.cpp \
-    server.cpp \
     lancdb.cpp \
-    tcpclientsocket.cpp
+    tcpclientsocket.cpp \
+    tcpserver.cpp
 
 HEADERS  += lanqqserver.h \
-    server.h \
     lancdb.h \
-    tcpclientsocket.h
+    tcpclientsocket.h \
+    tcpserver.h
 
 FORMS    += lanqqserver.ui

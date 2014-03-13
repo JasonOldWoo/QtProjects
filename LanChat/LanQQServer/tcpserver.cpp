@@ -1,4 +1,4 @@
-#include "server.h"
+#include "tcpserver.h"
 #include "tcpclientsocket.h"
 
 Server::Server(QObject *parent, short port) :
@@ -24,15 +24,15 @@ void Server::incomingConnection(qintptr handle)
 
 void Server::slotReadMsg(char *inbuf, uint inlen)
 {
-    emit signalNewData(inbuf, inlen);
+    emit signalMsg(inbuf, inlen);
 
-    foreach(TcpClientSocket *clt, clientList)
-    {
-        clt->write(inbuf, inlen);
-        //QTextStream out(clt);
-        //out << msg;
+//    foreach(TcpClientSocket *clt, clientList)
+//    {
+//        clt->write(inbuf, inlen);
+//        //QTextStream out(clt);
+//        //out << msg;
 
-    }
+//    }
 }
 
 void Server::slotDisconnected(qintptr description)
