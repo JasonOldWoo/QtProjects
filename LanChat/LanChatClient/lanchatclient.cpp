@@ -97,11 +97,13 @@ void LanChatClient::on_loginPushButton_clicked()
 void LanChatClient::slotSendInfo()
 {
     UserInfo node;
+    unsigned short shPdu = 1001;
     node.setUserInfo(ui->usernameLineEdit->text(),
                      ui->passwordLineEdit->text(),
                      socket->peerAddress().toString());
     QDataStream out(socket);
-    out << node;
+    out << shPdu;
+//    out << node;
 }
 
 void LanChatClient::on_msgLineEdit_returnPressed()
