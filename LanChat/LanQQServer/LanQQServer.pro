@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,10 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         lanqqserver.cpp \
     server.cpp \
+    lancdb.cpp \
     tcpclientsocket.cpp
 
 HEADERS  += lanqqserver.h \
     server.h \
+    lancdb.h \
     tcpclientsocket.h
 
 FORMS    += lanqqserver.ui

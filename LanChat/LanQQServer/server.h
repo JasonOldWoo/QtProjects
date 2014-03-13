@@ -12,11 +12,11 @@ public:
     explicit Server(QObject *parent = 0, short port = 8888);
     
 signals:
-    void signalUpdateMsg(QString);
+    void signalNewData(char *inbuf, uint inlen);
 
 public slots:
     void incomingConnection(qintptr handle);
-    void slotReadMsg(QString msg);
+    void slotReadMsg(char *inbuf, uint inlen);
     void slotDisconnected(qintptr);
 
 private:

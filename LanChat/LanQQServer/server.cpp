@@ -15,20 +15,20 @@ void Server::incomingConnection(qintptr handle)
     TcpClientSocket *client = new TcpClientSocket(this);
     client->setSocketDescriptor(handle);
 
-    connect(client, SIGNAL(signalMsg(QString)), this, SLOT(slotReadMsg(QString)));
+    connect(client, SIGNAL(signalMsg(char *, uint)), this, SLOT(slotReadMsg(char *, uint)));
     connect(client, SIGNAL(signalDisconnected(qintptr)), this, SLOT(slotDisconnected(qintptr)));
 
     clientList.append(client);
 }
 
 
-void Server::slotReadMsg(QString msg)
+void Server::slotReadMsg(char *inbuf, uint inlen)
 {
-    emit signalUpdateMsg(msg);
+    emit signalNewData(inbuf, inlen);
 
     foreach(TcpClientSocket *clt, clientList)
     {
-        clt->write(msg.toUtf8().data(), msg.toUtf8().length());
+        clt->write(inbuf, inlen);
         //QTextStream out(clt);
         //out << msg;
 

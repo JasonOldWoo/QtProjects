@@ -18,10 +18,11 @@ class LanQQServer : public QMainWindow
 public:
     explicit LanQQServer(QWidget *parent = 0);
     ~LanQQServer();
+
     
 private slots:
     void on_actionStart_Service_triggered();
-    void slotUpdateMsg(QString);
+    void slotUpdateMsg(char *inbuf, uint inlen);
 
 signals:
     void signalUpdateMsg(QString);

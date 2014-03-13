@@ -1,10 +1,11 @@
 #include "tcpclientsocket.h"
 #include <QHostAddress>
+#include <QDataStream>
+#include <QByteArray>
 
 TcpClientSocket::TcpClientSocket(QObject *parent) :
     QTcpSocket(parent)
 {
-    isAutentication = true;
     connect(this, SIGNAL(readyRead()), SLOT(slotReadData()));
     connect(this, SIGNAL(disconnected()), SLOT(slotDisconneted()));
 }
@@ -12,17 +13,11 @@ TcpClientSocket::TcpClientSocket(QObject *parent) :
 
 void TcpClientSocket::slotReadData()
 {
-    if (isAutentication)
-    {
-        Authenticate();
-    }
     while (bytesAvailable() > 0)
     {
-        QTextStream in(this);
-        QString msg;
-        in >> msg;
+        QByteArray ba = readAll();
 
-        emit signalMsg(peerAddress().toString() + ":" + msg);
+        emit signalMsg(ba.data(), (uint)ba.length());
     }
 }
 
@@ -31,10 +26,3 @@ void TcpClientSocket::slotDisconneted()
     qDebug() << "disconnect";
     emit signalDisconnected(socketDescriptor());
 }
-
-bool TcpClientSocket::Authenticate()
-{
-
-}
-
-

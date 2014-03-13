@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QDataStream>
 
 LanQQServer::LanQQServer(QWidget *parent) :
     QMainWindow(parent),
@@ -24,12 +25,17 @@ void LanQQServer::on_actionStart_Service_triggered()
 
     server = new Server();
 
-    connect(server, SIGNAL(signalUpdateMsg(QString)), this, SLOT(slotUpdateMsg(QString)));
+    connect(server, SIGNAL(signalNewData(char *, uint)), this, SLOT(slotUpdateMsg(char *, uint)));
 
 }
 
-void LanQQServer::slotUpdateMsg(QString msg)
+void LanQQServer::slotUpdateMsg(char *inbuf, uint inlen)
 {
-    qDebug() << "LanQQserver: update msg: " << msg;
-    ui->msgListWidget->addItem(msg);
+    qDebug() << "LanQQserver: new data length: " << inlen;
+//    ui->msgListWidget->addItem(msg);
+    QByteArray ba;
+    QDataStream d(&ba, QIODevice::ReadOnly);
+    unsigned short shPdu;
+    d >> shPdu;
+
 }
