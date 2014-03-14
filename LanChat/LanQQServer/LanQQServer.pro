@@ -26,6 +26,7 @@ HEADERS  += \
     LCPdu.h \
     lcdbctrl.h \
     lcdb.h \
-    lcserver.h
+    lcserver.h \
+    LCDBInfo.h
 
 FORMS    += lcserver.ui

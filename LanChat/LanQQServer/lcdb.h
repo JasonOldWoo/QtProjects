@@ -4,7 +4,16 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QFile>
+#include <QSqlError>
 #include "LCPdu.h"
+#include "LCDBInfo.h"
+
+
+#define DEFAULT_DB_USERNAME     "lancuser"
+#define DEFAULT_DB_PASSWORD     "lanc.webcon"
+#define DEFAULT_DB_HOST         "localhost"
+#define DEFAULT_DB_PORT         3306
+#define DEFAULT_DB_NAME         "lanc_db"
 
 class LanCDB
 {
@@ -13,6 +22,7 @@ public:
     int initialize();
     void loadDBConfig();
     int verifyUser(char *szUsername, char *szPassword);
+    int getFriendList(quint32 dwUserId, quint32 &dwUserNum, UserInfoList &strus);
 
 private:
     QSqlDatabase db;

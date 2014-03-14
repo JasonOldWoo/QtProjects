@@ -12,8 +12,10 @@ class LCDBCtrl
 {
 public:
     LCDBCtrl();
-    int userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);
-    int userRegister(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);
+    int DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);  // login
+    int DBCUserRegister(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);   // sign up fro lanchat
+    int DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);  // fetch friends of specific user
+    int DBCGetUserList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);    // fetch all users
 
 private:
     LanCDB db;

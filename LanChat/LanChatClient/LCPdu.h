@@ -15,6 +15,8 @@ const quint16 LCDB_PerChat_Rsp_ToCli = 9;
 const quint16 LCDB_AddFriend_Rep_FromCli = 10;
 const quint16 LCDB_AddFriend_Rsp_ToCli = 11;
 const quint16 LCDB_AddFriend_Rep_ToCli = 12;
+const quint16 LCDB_GetFriendList_Rep_FromCli = 13;
+const quint16 LCDB_GetFriendList_Rsp_ToCli = 14;
 
 
 //=======================================================================

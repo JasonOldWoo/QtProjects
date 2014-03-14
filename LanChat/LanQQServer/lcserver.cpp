@@ -11,6 +11,7 @@ LCServer::LCServer(QWidget *parent) :
     ui(new Ui::LCServer)
 {
     ui->setupUi(this);
+    dbCtrl = new LCDBCtrl;
 }
 
 LCServer::~LCServer()
@@ -41,13 +42,21 @@ void LCServer::slotDealMsg(qintptr sockd)
         char *outbuf = new char[MAX_OUTBUF_SIZE];
         uint outlen = 0;
         qDebug() << "PDU=[" << shPdu << "]";
+        char *inbuf = ba.data() + sizeof (shPdu);
+        uint inlen = (uint)(ba.size() - sizeof (shPdu));
         switch (shPdu)
         {
         case LCDB_UserLogin_Rep_FromCli:
-            dbCtrl->userLogin((ba.data()+sizeof (shPdu)), (uint)(ba.size()-sizeof (shPdu)), outbuf, outlen);
+            dbCtrl->DBCUserLogin(inbuf, inlen , outbuf, outlen);
+            shPdu = LCDB_UserLogin_Rsp_ToCli;
             break;
+        case LCDB_GetFriendList_Rep_FromCli:
+
+        default:
+            delete outbuf;
+            return;
         }
-        server->slotSendMsg(sockd, outbuf, outlen, LCDB_UserLogin_Rsp_ToCli);
+        server->slotSendMsg(sockd, outbuf, outlen, shPdu);
         delete outbuf;
     }
 }

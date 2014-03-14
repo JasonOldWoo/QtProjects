@@ -86,10 +86,19 @@ void LanChatClient::on_loginPushButton_clicked()
         connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slotError()));
 
         socket->connectToHost(ui->hostLineEdit->text(), ui->portLineEdit->text().toShort());
+        if (!socket->waitForConnected())
+        {
+            QMessageBox::warning(this, tr("Error"), tr("Can not connect to server, please check your network"));
+        }
     }
     else
     {
         socket->disconnectFromHost();
+        ui->loginPushButton->setText(tr("LOGIN"));
+        ui->hostLineEdit->setReadOnly(false);
+        ui->portLineEdit->setReadOnly(false);
+        ui->usernameLineEdit->setReadOnly(false);
+        ui->passwordLineEdit->setReadOnly(false);
     }
 }
 
@@ -153,12 +162,10 @@ void LanChatClient::slotDisconnected()
     qDebug() << "connection lost";
     ui->msgLineEdit->setEnabled(false);
     ui->loginPushButton->setText("LOGIN");
-    isAuthentication = true;
-    ui->usernameLineEdit->setEnabled(true);
-    ui->passwordLineEdit->setEnabled(true);
-    ui->hostLineEdit->setEnabled(true);
-    ui->portLineEdit->setEnabled(true);
-    ui->signUpPushButton->setEnabled(true);
+    ui->usernameLineEdit->setReadOnly(false);
+    ui->passwordLineEdit->setReadOnly(false);
+    ui->hostLineEdit->setReadOnly(false);
+    ui->portLineEdit->setReadOnly(false);
 }
 
 void LanChatClient::slotReadData()
@@ -218,6 +225,11 @@ void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
         isShow = false;
         ui->widget->setVisible(false);
 
+    }
+    else if (LCDB_ERR_DBDATA == shRet)
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Server error!"));
+        socket->disconnectFromHost();
     }
     else
     {
