@@ -2,7 +2,7 @@
 #define SERVER_H
 
 #include <QTcpServer>
-#include <QList>
+#include <QMap>
 #include "tcpclientsocket.h"
 
 class Server : public QTcpServer
@@ -10,17 +10,22 @@ class Server : public QTcpServer
     Q_OBJECT
 public:
     explicit Server(QObject *parent = 0, short port = 8888);
+    QByteArray getData(qintptr sockd);
     
 signals:
-    void signalMsg(char *inbuf, uint inlen);
+    void signalMsg(qintptr sockd);
 
 public slots:
     void incomingConnection(qintptr handle);
-    void slotReadMsg(char *inbuf, uint inlen);
-    void slotDisconnected(qintptr);
+    void slotReadMsg(qintptr sockd);
+    void slotDisconnected(qintptr sockd);
+    void slotSendMsg(qintptr sockd, char *outbuf, uint outlen);
+    void slotDisconnect(qintptr sockd);
+    void slotDeal(qintptr sockd, qint8 flag, char *outbuf, uint outlen);
 
 private:
-    QList<TcpClientSocket*>clientList;
+    QMap<qintptr, TcpClientSocket*>clientList;
+    enum {SENDMSG, DISCONNECT, DISCONNECTED};
     
 };
 

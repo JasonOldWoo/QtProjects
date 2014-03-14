@@ -40,12 +40,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionSave_as"/>
    <addaction name="actionStart_Service"/>
    <addaction name="actionQuit"/>
-   <addaction name="actionOption"/>
-   <addaction name="actionAbout"/>
-   <addaction name="actionHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">

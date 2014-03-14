@@ -16,11 +16,15 @@ SOURCES += main.cpp\
         lanqqserver.cpp \
     lancdb.cpp \
     tcpclientsocket.cpp \
-    tcpserver.cpp
+    tcpserver.cpp \
+    lcdbdataresol.cpp
 
 HEADERS  += lanqqserver.h \
     lancdb.h \
     tcpclientsocket.h \
-    tcpserver.h
+    tcpserver.h \
+    DArrQueue.h \
+    LCPdu.h \
+    lcdbdataresol.h
 
 FORMS    += lanqqserver.ui

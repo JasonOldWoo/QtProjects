@@ -6,6 +6,7 @@
 #include <QList>
 #include "tcpserver.h"
 #include "tcpclientsocket.h"
+#include "LCPdu.h"
 
 namespace Ui {
 class LanQQServer;
@@ -22,7 +23,7 @@ public:
     
 private slots:
     void on_actionStart_Service_triggered();
-    void slotUpdateMsg(char *inbuf, uint inlen);
+    void slotDealMsg(qintptr sockd);
 
 signals:
     void signalUpdateMsg(QString);

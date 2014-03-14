@@ -13,20 +13,35 @@ TcpClientSocket::TcpClientSocket(QObject *parent) :
 
 void TcpClientSocket::slotReadData()
 {
+    qDebug() << "TcpClientSocket::slotReadData()";
     while (bytesAvailable() > 0)
     {
         QByteArray ba = readAll();
         if (ba.length())
         {
-            char *inbuf = new char[ba.length()];
-            memcpy(inbuf, ba.data(), ba.length());
-            emit signalMsg(inbuf, (uint)ba.length());
+            inDataList.enque(ba);
+            emit signalMsg(socketDescriptor());
         }
     }
 }
 
 void TcpClientSocket::slotDisconneted()
 {
-    qDebug() << "disconnect";
+    qDebug() << "TcpClientSocket::slotDisconneted()";
     emit signalDisconnected(socketDescriptor());
 }
+
+QByteArray TcpClientSocket::getData()
+{
+    qDebug() << "QByteArray TcpClientSocket::getData()";
+    if (!inDataList.IsEmpty())
+        return inDataList.deque();
+    else
+    {
+        qDebug() << "QByteArray TcpClientSocket::getData() - is empty";
+        QByteArray ba;
+        ba.clear();
+        return ba;
+    }
+}
+

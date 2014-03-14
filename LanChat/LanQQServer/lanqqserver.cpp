@@ -25,18 +25,22 @@ void LanQQServer::on_actionStart_Service_triggered()
 
     server = new Server();
 
-    connect(server, SIGNAL(signalMsg(char *, uint)), this, SLOT(slotUpdateMsg(char *, uint)));
+    connect(server, SIGNAL(signalMsg(qintptr)), this, SLOT(slotDealMsg(qintptr)));
 
 }
 
-void LanQQServer::slotUpdateMsg(char *inbuf, uint inlen)
+void LanQQServer::slotDealMsg(qintptr sockd)
 {
-    qDebug() << "LanQQserver: new data length: " << inlen;
-//    ui->msgListWidget->addItem(msg);
-    QByteArray ba(inbuf, inlen);
-    QDataStream d(&ba, QIODevice::ReadOnly);
-    unsigned short shPdu;
-    d >> shPdu;
-    qDebug() << "PDU=[" << shPdu << "]";
-
+    QByteArray ba = server->getData(sockd);
+    qDebug() << "inlen=[" << ba.size() << "]";
+    if (ba.size())
+    {
+        QDataStream d(&ba, QIODevice::ReadOnly);
+        unsigned short shPdu;
+        d >> shPdu;
+        qDebug() << "PDU=[" << shPdu << "]";
+        switch (shPdu)
+        {
+        }
+    }
 }
