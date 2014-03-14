@@ -30,3 +30,7 @@ HEADERS  += \
     LCDBInfo.h
 
 FORMS    += lcserver.ui
+
+OTHER_FILES += \
+    install_lanc_db/install_lanc_db.sh \
+    install_lanc_db/lanc_db_sql.sql
