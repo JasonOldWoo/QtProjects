@@ -1,25 +1,25 @@
-#include "lanqqserver.h"
-#include "ui_lanqqserver.h"
+#include "lcserver.h"
+#include "ui_lcserver.h"
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QDebug>
 #include <QDataStream>
 
-LanQQServer::LanQQServer(QWidget *parent) :
+LCServer::LCServer(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::LanQQServer)
+    ui(new Ui::LCServer)
 {
     ui->setupUi(this);
 }
 
-LanQQServer::~LanQQServer()
+LCServer::~LCServer()
 {
     delete ui;
 
 }
 
-void LanQQServer::on_actionStart_Service_triggered()
+void LCServer::on_actionStart_Service_triggered()
 {
     ui->actionStart_Service->setEnabled(false);
 
@@ -29,18 +29,25 @@ void LanQQServer::on_actionStart_Service_triggered()
 
 }
 
-void LanQQServer::slotDealMsg(qintptr sockd)
+void LCServer::slotDealMsg(qintptr sockd)
 {
     QByteArray ba = server->getData(sockd);
     qDebug() << "inlen=[" << ba.size() << "]";
     if (ba.size())
     {
         QDataStream d(&ba, QIODevice::ReadOnly);
-        unsigned short shPdu;
+        quint16 shPdu;
         d >> shPdu;
+        char *outbuf = new char[MAX_OUTBUF_SIZE];
+        uint outlen = 0;
         qDebug() << "PDU=[" << shPdu << "]";
         switch (shPdu)
         {
+        case LCDB_UserLogin_Rep_FromCli:
+            dbCtrl->userLogin((ba.data()+sizeof (shPdu)), (uint)(ba.size()-sizeof (shPdu)), outbuf, outlen);
+            break;
         }
+        server->slotSendMsg(sockd, outbuf, outlen, LCDB_UserLogin_Rsp_ToCli);
+        delete outbuf;
     }
 }

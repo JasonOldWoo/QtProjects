@@ -1,10 +1,10 @@
-#include "lanqqserver.h"
+#include "lcserver.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    LanQQServer w;
+    LCServer w;
     w.show();
     
     return a.exec();

@@ -19,7 +19,8 @@ SOURCES += main.cpp\
 
 HEADERS  += lanchatclient.h \
     signup.h \
-    userinfo.h
+    userinfo.h \
+    LCPdu.h
 
 FORMS    += lanchatclient.ui \
     signup.ui

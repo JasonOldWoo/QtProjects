@@ -1,5 +1,6 @@
 #ifndef LCPDU_H
 #define LCPDU_H
+
 #include <QtGlobal>
 
 const quint16 LCDB_UserLogin_Rep_FromCli = 1;
@@ -18,7 +19,7 @@ const quint16 LCDB_AddFriend_Rep_ToCli = 12;
 
 //=======================================================================
 #define LCDB_ERR_SUCCESS	0
-#define LCDB_ERR_DBDATA_ERROR		-4001	//数据库错误
+#define LCDB_ERR_DBDATA		-4001	//数据库错误
 #define LCDB_ERR_USER_NotExist		-4002	//用户不存在
 #define LCDB_ERR_USER_VerifyFailed	-4003	//用户验证失败（密码、类型错误）
 #define LCDB_ERR_USER_Existed		-4004	//用户已存在
@@ -26,9 +27,5 @@ const quint16 LCDB_AddFriend_Rep_ToCli = 12;
 
 #define LC_ERR_USER_OffLine		-5001		//用户处于离线状态
 #define LC_ERR_USER_NotFriend		-5002	//非好友
-
-
-//=======================================================================
-#define MAX_OUTBUF_SIZE 1024
 
 #endif // LCPDU_H

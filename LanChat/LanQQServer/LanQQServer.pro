@@ -8,23 +8,24 @@ QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = LanQQServer
+TARGET = LCServer
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        lanqqserver.cpp \
-    lancdb.cpp \
     tcpclientsocket.cpp \
     tcpserver.cpp \
-    lcdbdataresol.cpp
+    lcdbctrl.cpp \
+    lcdb.cpp \
+    lcserver.cpp
 
-HEADERS  += lanqqserver.h \
-    lancdb.h \
+HEADERS  += \
     tcpclientsocket.h \
     tcpserver.h \
     DArrQueue.h \
     LCPdu.h \
-    lcdbdataresol.h
+    lcdbctrl.h \
+    lcdb.h \
+    lcserver.h
 
-FORMS    += lanqqserver.ui
+FORMS    += lcserver.ui

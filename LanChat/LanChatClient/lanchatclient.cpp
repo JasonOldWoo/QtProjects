@@ -85,7 +85,6 @@ void LanChatClient::on_loginPushButton_clicked()
         connect(socket, SIGNAL(readyRead()), this, SLOT(slotReadData()));
         connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slotError()));
 
-        ui->loginPushButton->setEnabled(false);
         socket->connectToHost(ui->hostLineEdit->text(), ui->portLineEdit->text().toShort());
     }
     else
@@ -96,13 +95,19 @@ void LanChatClient::on_loginPushButton_clicked()
 
 void LanChatClient::slotSendInfo()
 {
-    UserInfo node;
-    unsigned short shPdu = 1001;
-    node.setUserInfo(ui->usernameLineEdit->text(),
-                     ui->passwordLineEdit->text(),
-                     socket->peerAddress().toString());
-    QDataStream out(socket);
+//    UserInfo node;
+    quint16 shPdu = LCDB_UserLogin_Rep_FromCli;
+    quint32 dwUserType = 10;
+//    node.setUserInfo(ui->usernameLineEdit->text(),
+//                     ui->passwordLineEdit->text(),
+//                     socket->peerAddress().toString());
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::ReadWrite);
     out << shPdu;
+    out << ui->usernameLineEdit->text();
+    out << ui->passwordLineEdit->text();
+    out << dwUserType;
+    socket->write(ba.data(), (qint64) ba.length());
 //    out << node;
 }
 
@@ -133,7 +138,6 @@ void LanChatClient::slotConnected()
     ui->msgLineEdit->setEnabled(true);
     ui->loginPushButton->setText("LOGOUT");
     ui->signUpPushButton->setEnabled(false);
-    ui->loginPushButton->setEnabled(true);
     ui->usernameLineEdit->setEnabled(false);
     ui->passwordLineEdit->setEnabled(false);
     ui->hostLineEdit->setEnabled(false);
@@ -150,7 +154,6 @@ void LanChatClient::slotDisconnected()
     ui->msgLineEdit->setEnabled(false);
     ui->loginPushButton->setText("LOGIN");
     isAuthentication = true;
-    ui->loginPushButton->setEnabled(true);
     ui->usernameLineEdit->setEnabled(true);
     ui->passwordLineEdit->setEnabled(true);
     ui->hostLineEdit->setEnabled(true);
@@ -161,24 +164,20 @@ void LanChatClient::slotDisconnected()
 void LanChatClient::slotReadData()
 {
     qDebug() << "data received";
-    if (isAuthentication)
+    QByteArray ba = socket->readAll();
+    qDebug() << "inlen=[" << ba.size() << "]";
+    if (ba.size())
     {
-        char authenRes[10] = "";
-        socket->read(authenRes, 8);
-        QString qAuthenRes(authenRes);
-        if ("success" == qAuthenRes)
+        QDataStream d(&ba, QIODevice::ReadOnly);
+        quint16 shPdu;
+        d >> shPdu;
+        qDebug() << "PDU=[" << shPdu << "]";
+        switch (shPdu)
         {
-            emit signalAuthenticated();
-            isAuthentication = false;
+        case LCDB_UserLogin_Rsp_ToCli:
+            dillAuthInfo(ba.data()+sizeof(shPdu), ba.length()-sizeof(shPdu));
+            break;
         }
-    }
-    while (socket->bytesAvailable() > 0)
-    {
-        QByteArray ba;
-        ba.resize(socket->bytesAvailable());
-        socket->read(ba.data(), ba.size());
-        ui->msgTextEdit->append(ba);
-        ui->msgTextEdit->append("\n");
     }
 }
 
@@ -196,4 +195,33 @@ void LanChatClient::on_signUpPushButton_clicked()
     this->hide();
 
 //    signUp->close();
+}
+
+void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
+{
+    QByteArray inBa(inbuf, len);
+    QDataStream inD(&inBa, QIODevice::ReadOnly);
+    qint16 shRet;
+    inD >> shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+    {
+        ui->loginPushButton->setText(tr("LOGOUT"));
+        ui->hostLineEdit->setReadOnly(true);
+        ui->passwordLineEdit->setReadOnly(true);
+        ui->portLineEdit->setReadOnly(true);
+        ui->usernameLineEdit->setReadOnly(true);
+        ui->msgLineEdit->setEnabled(true);
+        ui->msgLineEdit->setReadOnly(false);
+        ui->msgTextEdit->setEnabled(true);
+        ui->msgTextEdit->setReadOnly(true);
+        ui->expandPushButton->setText("+");
+        isShow = false;
+        ui->widget->setVisible(false);
+
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Username or password is wrong!"));
+        socket->disconnectFromHost();
+    }
 }

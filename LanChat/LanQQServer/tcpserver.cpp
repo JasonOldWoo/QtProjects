@@ -34,12 +34,27 @@ void Server::slotDisconnected(qintptr sockd)
         clientList.erase(clientIt);
 }
 
-void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen)
+void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu)
 {
+    QByteArray outBa;
+    QDataStream outD(&outBa, QIODevice::ReadWrite);
+    qDebug() << "outlen1=[" << outlen << "]";
+    outD << shPdu;
+    outD.writeRawData(outbuf, outlen);
+    outlen = outBa.length();
+    QDataStream chkD(&outBa, QIODevice::ReadOnly);
+    qint16 shRet;
+    chkD >> shPdu;
+    chkD >> shRet;
+    qDebug() << shPdu << ", " << shRet << endl;
+
     QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
-        (*clientIt)->write(outbuf, (qint64)outlen);
+    {
+        (*clientIt)->write(outBa.data(), (qint64)outlen);
+        qDebug() << "void Server::slotSendMsg() - outlen=[" << outlen << "]";
+    }
 }
 
 void Server::slotDisconnect(qintptr sockd)
@@ -50,34 +65,6 @@ void Server::slotDisconnect(qintptr sockd)
     {
         (*clientIt)->close();
         clientList.erase(clientIt);
-    }
-}
-
-void Server::slotDeal(qintptr sockd, qint8 flag, char *outbuf, uint outlen)
-{
-    QMap<qintptr, TcpClientSocket*>::iterator clientIt;
-    clientIt = clientList.find(sockd);
-    if (clientIt != clientList.end())
-    {
-        switch (flag)
-        {
-        case SENDMSG:
-            if (outbuf)
-                (*clientIt)->write(outbuf, (qint64)outlen);
-            break;
-
-        case DISCONNECT:
-            clientList.erase(clientIt);
-            break;
-
-        case DISCONNECTED:
-            (*clientIt)->close();
-            clientList.erase(clientIt);
-            break;
-
-        default:
-            break;
-        }
     }
 }
 
@@ -97,5 +84,4 @@ QByteArray Server::getData(qintptr sockd)
         ba.clear();
         return ba;
     }
-
 }

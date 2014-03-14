@@ -6,6 +6,7 @@
 #include <QString>
 #include "userinfo.h"
 #include "signup.h"
+#include "LCPdu.h"
 
 namespace Ui {
 class LanChatClient;
@@ -44,6 +45,9 @@ private:
     QString password;
     bool isAuthentication;
     SignUp *signUp;
+
+private:
+    void dillAuthInfo(const char *inbuf, uint len);
 };
 
 #endif // LANCHATCLIENT_H

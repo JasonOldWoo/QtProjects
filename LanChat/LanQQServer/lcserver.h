@@ -7,18 +7,19 @@
 #include "tcpserver.h"
 #include "tcpclientsocket.h"
 #include "LCPdu.h"
+#include "lcdbctrl.h"
 
 namespace Ui {
-class LanQQServer;
+class LCServer;
 }
 
-class LanQQServer : public QMainWindow
+class LCServer : public QMainWindow
 {
     Q_OBJECT
     
 public:
-    explicit LanQQServer(QWidget *parent = 0);
-    ~LanQQServer();
+    explicit LCServer(QWidget *parent = 0);
+    ~LCServer();
 
     
 private slots:
@@ -29,9 +30,9 @@ signals:
     void signalUpdateMsg(QString);
 
 private:
-    Ui::LanQQServer *ui;
+    Ui::LCServer *ui;
     Server *server;
-
+    LCDBCtrl *dbCtrl;
 };
 
 #endif // LANQQSERVER_H

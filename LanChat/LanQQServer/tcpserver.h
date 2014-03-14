@@ -19,9 +19,8 @@ public slots:
     void incomingConnection(qintptr handle);
     void slotReadMsg(qintptr sockd);
     void slotDisconnected(qintptr sockd);
-    void slotSendMsg(qintptr sockd, char *outbuf, uint outlen);
+    void slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu);
     void slotDisconnect(qintptr sockd);
-    void slotDeal(qintptr sockd, qint8 flag, char *outbuf, uint outlen);
 
 private:
     QMap<qintptr, TcpClientSocket*>clientList;
