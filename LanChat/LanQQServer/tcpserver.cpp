@@ -92,6 +92,6 @@ void Server::setClientUsername(qintptr sockd, char *szUsername, uint len)
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
-        (*clientIt)->setUsername(szUsername, len);
+        (*clientIt)->setClientName(szUsername, len);
     }
 }
