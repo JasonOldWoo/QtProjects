@@ -59,7 +59,7 @@ void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu
 
 void Server::slotDisconnect(qintptr sockd)
 {
-    QMap<qintptr, TcpClientSocket*>::iterator  clientIt;
+    QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
@@ -83,5 +83,15 @@ QByteArray Server::getData(qintptr sockd)
         QByteArray ba;
         ba.clear();
         return ba;
+    }
+}
+
+void Server::setClientUsername(qintptr sockd, char *szUsername, uint len)
+{
+    QMap<qintptr, TcpClientSocket*>::iterator clientIt;
+    clientIt = clientList.find(sockd);
+    if (clientIt != clientList.end())
+    {
+        (*clientIt)->setUsername(szUsername, len);
     }
 }

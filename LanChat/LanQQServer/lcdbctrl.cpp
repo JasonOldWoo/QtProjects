@@ -19,6 +19,8 @@ int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &o
     d >> dwUserType;
 
     shRet = db.verifyUser(szUsername.toUtf8().data(), szUserPasswd.toUtf8().data());
+    if (LCDB_ERR_SUCCESS == shRet)
+        db.updateLoginTime(szUsername.toUtf8().data());
 
     QByteArray outBa;
     QDataStream outD(&outBa, QIODevice::ReadWrite);
@@ -45,6 +47,4 @@ int LCDBCtrl::DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uin
     QDataStream d(&ba, QIODevice::ReadOnly);
     quint32 dwUserId;
     qint16 shRet;
-
-
 }

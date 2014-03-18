@@ -12,6 +12,7 @@ typedef struct LCDBUserInfo
     quint32 dwUserGroupId;
     quint32 dwUserType;
     char szUsername[129];
+    char szIp[129];
 }UserInfo;
 typedef QVector<UserInfo> UserInfoList;
 typedef QVector<UserInfo>::iterator UserInfoListIt;

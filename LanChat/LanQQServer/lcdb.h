@@ -23,6 +23,7 @@ public:
     void loadDBConfig();
     int verifyUser(char *szUsername, char *szPassword);
     int getFriendList(quint32 dwUserId, quint32 &dwUserNum, UserInfoList &strus);
+    int updateLoginTime();
 
 private:
     QSqlDatabase db;

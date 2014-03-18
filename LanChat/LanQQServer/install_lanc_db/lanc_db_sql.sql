@@ -7,16 +7,15 @@ commit;
 use lanc_db;
 create table users
 (
-user_id			int unsigned primary key  auto_increment,
-user_group_id		int unsigned not null,
+user_id				int unsigned primary key  auto_increment,
+user_group_id			int unsigned not null,
 user_name			varbinary(129) not null,
 user_pwd			varbinary(129) not null,
 user_type			int unsigned not null,
-user_flag			 smallint unsigned not null,
-login_time			time,
-login_date			date,
-logout_time			time,
-logout_date			date,
+user_flag			smallint unsigned not null,
+register_time			timestamp not null default current_timestamp on update current_timestamp,
+login_time			timestamp not null,
+logout_time			timestamp not null,
 index user_index(user_id),
 unique index user_name(user_id)
 )engine=innodb auto_increment=1000 default character set utf8;
@@ -36,7 +35,7 @@ create table groups
 (
 group_id			int unsigned primary key auto_increment,
 group_name			varbinary(129) not null,
-group_admin		int unsigned not null,
+group_admin			int unsigned not null,
 group_type			int unsigned not null,
 index group_index(group_id),
 unique index group_name(group_id),

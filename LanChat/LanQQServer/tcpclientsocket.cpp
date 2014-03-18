@@ -45,3 +45,18 @@ QByteArray TcpClientSocket::getData()
     }
 }
 
+void TcpClientSocket::setClientName(const char *szUsername, uint len)
+{
+    if (len > 0 && len < 130)
+    {
+        memcpy(m_szClientName, szUsername, len);
+        m_szClientName[len] = '\0';
+    }
+    else
+        m_szClientName[0] = '\0';
+}
+
+const char *TcpClientSocket::getClientName()
+{
+    return m_szClientName;
+}

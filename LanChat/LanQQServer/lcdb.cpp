@@ -69,6 +69,26 @@ int LanCDB::verifyUser(char *szUsername, char *szPassword)
         return LCDB_ERR_USER_VerifyFailed;
 }
 
+int LanCDB::updateLoginTime(char *szUsername)
+{
+    std::stringstream oss;
+    oss.str("");
+    oss << "update users set login_time=current_timestamp, logout_time='0000-00-00 00:00:00' where user_name='" << szUsername << "'";
+
+    QSqlQuery *sqlQuery = new QSqlQuery(db);
+    if (!sqlQuery->exec((char *)(oss.str().c_str())))
+    {
+        qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
+        qDebug() << db.lastError();
+        return LCDB_ERR_DBDATA_ERROR;
+    }
+
+    if (sqlQuery->numRowsAffected())
+        return LCDB_ERR_SUCCESS;
+    else
+        return LCDB_ERR_USER_NotExist;
+}
+
 int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& strus)
 {
     std::stringstream oss;
@@ -93,7 +113,9 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
         {
             UserInfo stru;
             memset(&stru, 0, sizeof (stru));
-
+            memcpy(stru.szUsername, (char *)sqlQuery->value(0).data());
+            strus.push_back(stru);
+            dwUserNum++;
         }
     }
 }
