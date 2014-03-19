@@ -21,9 +21,10 @@ public:
     LanCDB();
     int initialize();
     void loadDBConfig();
-    int verifyUser(char *szUsername, char *szPassword);
+    int verifyUser(UserInfo &stru);
     int getFriendList(quint32 dwUserId, quint32 &dwUserNum, UserInfoList &strus);
-    int updateLoginTime();
+    int updateUserInfo(UserInfo &stru);
+    int updateOffUser(qintptr sockd);
 
 private:
     QSqlDatabase db;

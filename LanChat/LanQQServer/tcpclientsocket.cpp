@@ -8,6 +8,7 @@ TcpClientSocket::TcpClientSocket(QObject *parent) :
 {
     connect(this, SIGNAL(readyRead()), SLOT(slotReadData()));
     connect(this, SIGNAL(disconnected()), SLOT(slotDisconneted()));
+    sockd = socketDescriptor();
 }
 
 
@@ -28,7 +29,7 @@ void TcpClientSocket::slotReadData()
 void TcpClientSocket::slotDisconneted()
 {
     qDebug() << "TcpClientSocket::slotDisconneted()";
-    emit signalDisconnected(socketDescriptor());
+    emit signalDisconnected(sockd);
 }
 
 QByteArray TcpClientSocket::getData()

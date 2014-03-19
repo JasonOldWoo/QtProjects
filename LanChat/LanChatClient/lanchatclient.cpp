@@ -116,6 +116,8 @@ void LanChatClient::slotSendInfo()
     out << ui->usernameLineEdit->text();
     out << ui->passwordLineEdit->text();
     out << dwUserType;
+    out << socket->localAddress().toString();
+    out << socket->socketDescriptor();
     socket->write(ba.data(), (qint64) ba.length());
 //    out << node;
 }

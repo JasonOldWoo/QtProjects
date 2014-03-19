@@ -15,6 +15,7 @@ public:
     
 signals:
     void signalMsg(qintptr sockd);
+    void signalDisconnected(qintptr sockd);
 
 public slots:
     void incomingConnection(qintptr handle);

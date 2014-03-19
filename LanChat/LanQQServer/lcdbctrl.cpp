@@ -2,25 +2,25 @@
 
 LCDBCtrl::LCDBCtrl()
 {
-    db.initialize();
+    dbc.initialize();
 }
 
 int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
 {
     QByteArray ba((char *)inbuf, inlen);
     QDataStream d(&ba, QIODevice::ReadOnly);
-    QString szUsername;
-    QString szUserPasswd;
+    UserInfo stru;
     qint16 shRet;
-    quint32 dwUserType;
 
-    d >> szUsername;
-    d >> szUserPasswd;
-    d >> dwUserType;
+    d >> stru.szUsername;
+    d >> stru.szUserPwd;
+    d >> stru.dwUserType;
+    d >> stru.szIp;
+    d >> stru.sockd;
 
-    shRet = db.verifyUser(szUsername.toUtf8().data(), szUserPasswd.toUtf8().data());
+    shRet = dbc.verifyUser(stru);
     if (LCDB_ERR_SUCCESS == shRet)
-        db.updateLoginTime(szUsername.toUtf8().data());
+        dbc.updateUserInfo(stru);
 
     QByteArray outBa;
     QDataStream outD(&outBa, QIODevice::ReadWrite);
@@ -33,7 +33,7 @@ int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &o
         outbuf = new char[outlen];
     }
     memcpy(outbuf, outBa.data(), outlen);
-    qDebug() << "int LCDBCtrl::userLogin() - shRet=[" << shRet << "], outlen=[" << outlen << "]";
+    qDebug() << "int LCDBCtrl::DBCUserLogin() - shRet=[" << shRet << "], outlen=[" << outlen << "]";
     return shRet;
 }
 
@@ -46,5 +46,45 @@ int LCDBCtrl::DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uin
     QByteArray ba((char *)inbuf, inlen);
     QDataStream d(&ba, QIODevice::ReadOnly);
     quint32 dwUserId;
+    quint32 dwUserNum = 0;
     qint16 shRet;
+    UserInfoList strus;
+    strus.clear();
+
+    d >> dwUserId;
+    shRet = dbc.getFriendList(dwUserId, dwUserNum, strus);
+
+    QByteArray outBa;
+    QDataStream outD(&outBa, QIODevice::ReadWrite);
+    outD << shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+    {
+        outD << dwUserNum;
+        for (int i=0; i<dwUserNum; i++)
+        {
+            QString tmp(strus[i].szUsername);
+            outD << tmp;
+            outD << strus[i].shFlag;
+            if (strus[i].shFlag)
+            {
+                tmp = strus[i].szIp;
+                outD << tmp;
+            }
+        }
+    }
+    outlen = outBa.size();
+    if (outlen > MAX_OUTBUF_SIZE)
+    {
+        delete [](char *)outbuf;
+        outbuf = NULL;
+        outbuf = new char[outlen];
+    }
+    memcpy(outbuf, outBa.data(), outlen);
+    qDebug() << "int LCDBCtrl::DBCGetFriendList - shRet=[" << shRet << "], outlen=[" << outlen << "]";
+    return shRet;
+}
+
+int LCDBCtrl::DBCUserLogout(qintptr sockd)
+{
+    return dbc.updateOffUser(sockd);
 }

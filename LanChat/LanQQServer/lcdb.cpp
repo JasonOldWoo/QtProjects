@@ -45,13 +45,13 @@ void LanCDB::loadDBConfig()
     /* default for now */
 }
 
-int LanCDB::verifyUser(char *szUsername, char *szPassword)
+int LanCDB::verifyUser(UserInfo &stru)
 {
     std::stringstream oss;
     oss.str("");
     oss << "select user_id from users where user_name='";
-    oss << szUsername << "' and aes_decrypt(user_pwd, 'users.user_pwd')='";
-    oss << szPassword << "'";
+    oss << stru.szUsername.toUtf8().data() << "' and aes_decrypt(user_pwd, 'users.user_pwd')='";
+    oss << stru.szUserPwd.toUtf8().data() << "'";
 
     qDebug() << "SQL=[" << oss.str().c_str() << "]";
 
@@ -69,11 +69,35 @@ int LanCDB::verifyUser(char *szUsername, char *szPassword)
         return LCDB_ERR_USER_VerifyFailed;
 }
 
-int LanCDB::updateLoginTime(char *szUsername)
+int LanCDB::updateUserInfo(UserInfo &stru)
 {
     std::stringstream oss;
     oss.str("");
-    oss << "update users set login_time=current_timestamp, logout_time='0000-00-00 00:00:00' where user_name='" << szUsername << "'";
+    oss << "update users set user_ip='" << stru.szIp.toUtf8().data();
+    oss << "', user_sockd=" << stru.sockd;
+    oss << ", user_flag=1";
+    oss << ", login_time=current_timestamp, logout_time='0000-00-00 00:00:00' where user_name='" << stru.szUsername.toUtf8().data() << "'";
+
+    QSqlQuery *sqlQuery = new QSqlQuery(db);
+    if (!sqlQuery->exec((char *)(oss.str().c_str())))
+    {
+        qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
+        qDebug() << db.lastError();
+        return LCDB_ERR_DBDATA_ERROR;
+    }
+
+    if (sqlQuery->numRowsAffected())
+        return LCDB_ERR_SUCCESS;
+    else
+        return LCDB_ERR_USER_NotExist;
+}
+
+int LanCDB::updateOffUser(qintptr sockd)
+{
+    std::stringstream oss;
+    oss.str("");
+    oss << "update users set logout_time=current_timestamp, user_flag=0 where user_sockd=" << sockd;
+    qDebug() << "SQL=[" << oss.str().c_str() << "]";
 
     QSqlQuery *sqlQuery = new QSqlQuery(db);
     if (!sqlQuery->exec((char *)(oss.str().c_str())))
@@ -93,7 +117,7 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
 {
     std::stringstream oss;
     oss.str("");
-    oss << "select user_name from users where user_id in(select user_id_b from userGrant where deal_flag=1 and user_id_a=" << dwUserId;
+    oss << "select user_name, user_flag, user_ip, from users where user_id in(select user_id_b from userGrant where deal_flag=1 and user_id_a=" << dwUserId;
     oss << " union select user_id_a from userGrant where deal_flag=1 and user_id_b=" << dwUserId << ")";
 
     qDebug() << "SQL=[" << oss.str().c_str() << "]";
@@ -113,7 +137,9 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
         {
             UserInfo stru;
             memset(&stru, 0, sizeof (stru));
-            memcpy(stru.szUsername, (char *)sqlQuery->value(0).data());
+            stru.szUsername = (char *)sqlQuery->value(0).data();
+            stru.shFlag = (qint16)sqlQuery->value(1).toInt();
+            stru.szIp = (char *)sqlQuery->value(2).data();
             strus.push_back(stru);
             dwUserNum++;
         }

@@ -30,8 +30,12 @@ void Server::slotDisconnected(qintptr sockd)
 {
     QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
+    qDebug() << "sockd=" << sockd << "disconnected";
     if (clientIt != clientList.end())
+    {
         clientList.erase(clientIt);
+    }
+    emit signalDisconnected(sockd);
 }
 
 void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu)

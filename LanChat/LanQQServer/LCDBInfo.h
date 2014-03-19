@@ -7,12 +7,14 @@
 typedef struct LCDBUserInfo
 {
     unsigned char byUserFlag;
+    quint16 shFlag;             // 0:offline; 1:online
     quint32 dwUserId;
-    quint32 dwUserPwd;
+    QString szUserPwd;
     quint32 dwUserGroupId;
     quint32 dwUserType;
-    char szUsername[129];
-    char szIp[129];
+    QString szUsername;
+    QString szIp;
+    qintptr sockd;
 }UserInfo;
 typedef QVector<UserInfo> UserInfoList;
 typedef QVector<UserInfo>::iterator UserInfoListIt;

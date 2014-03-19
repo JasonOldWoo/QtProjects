@@ -27,6 +27,7 @@ void LCServer::on_actionStart_Service_triggered()
     server = new Server();
 
     connect(server, SIGNAL(signalMsg(qintptr)), this, SLOT(slotDealMsg(qintptr)));
+    connect(server, SIGNAL(signalDisconnected(qintptr)), this, SLOT(slotDisconnected(qintptr)));
 
 }
 
@@ -59,4 +60,11 @@ void LCServer::slotDealMsg(qintptr sockd)
         server->slotSendMsg(sockd, outbuf, outlen, shPdu);
         delete outbuf;
     }
+}
+
+
+void LCServer::slotDisconnected(qintptr sockd)
+{
+    qDebug() << "LCServer::slotDisconnected()";
+    dbCtrl->DBCUserLogout(sockd);
 }

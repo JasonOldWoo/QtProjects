@@ -25,6 +25,7 @@ public:
 private slots:
     void on_actionStart_Service_triggered();
     void slotDealMsg(qintptr sockd);
+    void slotDisconnected(qintptr sockd);
 
 signals:
     void signalUpdateMsg(QString);

@@ -13,9 +13,11 @@ user_name			varbinary(129) not null,
 user_pwd			varbinary(129) not null,
 user_type			int unsigned not null,
 user_flag			smallint unsigned not null,
-register_time			timestamp not null default current_timestamp on update current_timestamp,
+register_time			timestamp not null default current_timestamp,
 login_time			timestamp not null,
 logout_time			timestamp not null,
+user_ip				varbinary(16) not null,
+user_sockd			int unsigned not null,
 index user_index(user_id),
 unique index user_name(user_id)
 )engine=innodb auto_increment=1000 default character set utf8;

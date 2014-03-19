@@ -16,9 +16,10 @@ public:
     int DBCUserRegister(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);   // sign up fro lanchat
     int DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);  // fetch friends of specific user
     int DBCGetUserList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);    // fetch all users
+    int DBCUserLogout(qintptr sockd);
 
 private:
-    LanCDB db;
+    LanCDB dbc;
 };
 
 #endif // LCDBCTRL_H

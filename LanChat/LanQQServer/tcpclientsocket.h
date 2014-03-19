@@ -24,6 +24,7 @@ public slots:
 private:
     LinkQueue<QByteArray> inDataList;
     char m_szClientName[129];
+    qintptr sockd;
 
 };
 
