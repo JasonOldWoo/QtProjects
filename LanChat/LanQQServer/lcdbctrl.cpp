@@ -5,7 +5,7 @@ LCDBCtrl::LCDBCtrl()
     dbc.initialize();
 }
 
-int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
+int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr &sockd)
 {
     QByteArray ba((char *)inbuf, inlen);
     QDataStream d(&ba, QIODevice::ReadOnly);
@@ -16,10 +16,14 @@ int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &o
     d >> stru.szUserPwd;
     d >> stru.dwUserType;
     d >> stru.szIp;
-    d >> stru.sockd;
+    stru.sockd = sockd;
 
-    shRet = dbc.verifyUser(stru);
-    if (LCDB_ERR_SUCCESS == shRet)
+    shRet = dbc.verifyUser(stru, sockd);
+
+    if (1 == stru.shFlag && LCDB_ERR_SUCCESS == shRet)
+        shRet = LCDB_ERR_USER_Online;
+
+    else if (LCDB_ERR_SUCCESS == shRet)
         dbc.updateUserInfo(stru);
 
     QByteArray outBa;

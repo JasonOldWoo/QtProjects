@@ -11,9 +11,10 @@ LanChatClient::LanChatClient(QWidget *parent) :
     ui->setupUi(this);
 //    ui->expandPushButton->setStyleSheet("background-color:#E6E6FA");
 //    ui->loginPushButton->setStyleSheet("background-color:#4169e1");
-    isShow = false;
+    isShow = true;
     isAuthentication = true;
-    ui->widget->setVisible(false);
+    ui->expandPushButton->setText("-");
+    ui->widget->setVisible(true);
     ui->msgTextEdit->setReadOnly(true);
     ui->msgLineEdit->setEnabled(false);
     ui->passwordLineEdit->setEchoMode(QLineEdit::Password);
@@ -74,6 +75,7 @@ void LanChatClient::on_loginPushButton_clicked()
         if (ui->passwordLineEdit->text().isEmpty())
         {
             QMessageBox::critical(this, tr("Error"), tr("password could not be empty"));
+            return ;
         }
 
         socket = new QTcpSocket;
@@ -117,7 +119,6 @@ void LanChatClient::slotSendInfo()
     out << ui->passwordLineEdit->text();
     out << dwUserType;
     out << socket->localAddress().toString();
-    out << socket->socketDescriptor();
     socket->write(ba.data(), (qint64) ba.length());
 //    out << node;
 }
@@ -168,11 +169,13 @@ void LanChatClient::slotDisconnected()
     ui->passwordLineEdit->setReadOnly(false);
     ui->hostLineEdit->setReadOnly(false);
     ui->portLineEdit->setReadOnly(false);
+    isShow = true;
+    ui->expandPushButton->setText("-");
+    ui->widget->setVisible(true);
 }
 
 void LanChatClient::slotReadData()
 {
-    qDebug() << "data received";
     QByteArray ba = socket->readAll();
     qDebug() << "inlen=[" << ba.size() << "]";
     if (ba.size())
@@ -180,12 +183,15 @@ void LanChatClient::slotReadData()
         QDataStream d(&ba, QIODevice::ReadOnly);
         quint16 shPdu;
         d >> shPdu;
-        qDebug() << "PDU=[" << shPdu << "]";
+        qDebug() << "void LanChatClient::slotReadData() - PDU=[" << shPdu << "]";
         switch (shPdu)
         {
         case LCDB_UserLogin_Rsp_ToCli:
             dillAuthInfo(ba.data()+sizeof(shPdu), ba.length()-sizeof(shPdu));
             break;
+        case LCDB_KickUser_Req_ToCli:
+            socket->disconnectFromHost();
+            QMessageBox::warning(this, tr("Error"), tr("This account has been accessed in another place!"));
         }
     }
 }
@@ -202,8 +208,6 @@ void LanChatClient::on_signUpPushButton_clicked()
     signUp = new SignUp();
     signUp->show();
     this->hide();
-
-//    signUp->close();
 }
 
 void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
@@ -233,9 +237,14 @@ void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
         QMessageBox::warning(this, tr("Error"), tr("Server error!"));
         socket->disconnectFromHost();
     }
+    else if (LCDB_ERR_USER_Online == shRet)
+    {
+        usleep(500);
+        slotSendInfo();
+    }
     else
     {
-        QMessageBox::warning(this, tr("Error"), tr("Username or password is wrong!"));
+        QMessageBox::warning(this, tr("Error"), tr("Username or password wrong!"));
         socket->disconnectFromHost();
     }
 }

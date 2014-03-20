@@ -24,6 +24,17 @@ int LanCDB::initialize()
         return LCDB_ERR_DBDATA_ERROR;
     }
     qDebug() << "Connect to Mysql successfully!";
+
+    std::stringstream oss;
+    oss.str("");
+    oss << "update users set user_flag=0, user_sockd=0";
+    QSqlQuery *sqlQuery = new QSqlQuery(db);
+    if (!sqlQuery->exec((char *)(oss.str().c_str())))
+    {
+        qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
+        qDebug() << db.lastError();
+        return LCDB_ERR_DBDATA_ERROR;
+    }
     return LCDB_ERR_SUCCESS;
 }
 
@@ -45,11 +56,11 @@ void LanCDB::loadDBConfig()
     /* default for now */
 }
 
-int LanCDB::verifyUser(UserInfo &stru)
+int LanCDB::verifyUser(UserInfo &stru, qintptr &sockd)
 {
     std::stringstream oss;
     oss.str("");
-    oss << "select user_id from users where user_name='";
+    oss << "select user_id, user_flag, user_sockd from users where user_name='";
     oss << stru.szUsername.toUtf8().data() << "' and aes_decrypt(user_pwd, 'users.user_pwd')='";
     oss << stru.szUserPwd.toUtf8().data() << "'";
 
@@ -64,7 +75,14 @@ int LanCDB::verifyUser(UserInfo &stru)
     }
 
     if (sqlQuery->numRowsAffected())
+    {
+        if (sqlQuery->next())
+        {
+            stru.shFlag = (quint16)sqlQuery->value(1).toInt();
+            sockd = (qintptr)sqlQuery->value(2).toLongLong();
+        }
         return LCDB_ERR_SUCCESS;
+    }
     else
         return LCDB_ERR_USER_VerifyFailed;
 }
@@ -77,6 +95,8 @@ int LanCDB::updateUserInfo(UserInfo &stru)
     oss << "', user_sockd=" << stru.sockd;
     oss << ", user_flag=1";
     oss << ", login_time=current_timestamp, logout_time='0000-00-00 00:00:00' where user_name='" << stru.szUsername.toUtf8().data() << "'";
+
+    qDebug() << "SQL=[" << oss.str().c_str() << "]";
 
     QSqlQuery *sqlQuery = new QSqlQuery(db);
     if (!sqlQuery->exec((char *)(oss.str().c_str())))

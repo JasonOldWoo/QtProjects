@@ -16,6 +16,7 @@ const quint16 LCDB_AddFriend_Rsp_ToCli = 11;
 const quint16 LCDB_AddFriend_Rep_ToCli = 12;
 const quint16 LCDB_GetFriendList_Rep_FromCli = 13;
 const quint16 LCDB_GetFriendList_Rsp_ToCli = 14;
+const quint16 LCDB_KickUser_Req_ToCli = 15;
 
 
 //=======================================================================
@@ -25,6 +26,7 @@ const quint16 LCDB_GetFriendList_Rsp_ToCli = 14;
 #define LCDB_ERR_USER_VerifyFailed	-4003	//用户验证失败（密码、类型错误）
 #define LCDB_ERR_USER_Existed		-4004	//用户已存在
 #define LCDB_ERR_USER_InBlackList	-4005	//用户处于屏蔽状态
+#define LCDB_ERR_USER_Online        -4006   //
 
 #define LC_ERR_USER_OffLine		-5001		//用户处于离线状态
 #define LC_ERR_USER_NotFriend		-5002	//非好友

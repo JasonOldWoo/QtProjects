@@ -34,7 +34,6 @@ void LCServer::on_actionStart_Service_triggered()
 void LCServer::slotDealMsg(qintptr sockd)
 {
     QByteArray ba = server->getData(sockd);
-    qDebug() << "inlen=[" << ba.size() << "]";
     if (ba.size())
     {
         QDataStream d(&ba, QIODevice::ReadOnly);
@@ -42,20 +41,33 @@ void LCServer::slotDealMsg(qintptr sockd)
         d >> shPdu;
         char *outbuf = new char[MAX_OUTBUF_SIZE];
         uint outlen = 0;
-        qDebug() << "PDU=[" << shPdu << "]";
+        qDebug() << "void LCServer::slotDealMsg(qintptr sockd) - PDU=" << shPdu << ", sockd=" << sockd;
         char *inbuf = ba.data() + sizeof (shPdu);
         uint inlen = (uint)(ba.size() - sizeof (shPdu));
         switch (shPdu)
         {
         case LCDB_UserLogin_Rep_FromCli:
-            dbCtrl->DBCUserLogin(inbuf, inlen , outbuf, outlen);
+        {
+            qintptr tmpSockd = sockd;
+            if (LCDB_ERR_USER_Online == dbCtrl->DBCUserLogin(inbuf, inlen , outbuf, outlen, tmpSockd))
+            {
+                char *outb = NULL;
+                uint outl = 0;
+                server->slotSendMsg(tmpSockd, outb, outl, LCDB_KickUser_Req_ToCli);
+            }
             shPdu = LCDB_UserLogin_Rsp_ToCli;
             break;
+        }
         case LCDB_GetFriendList_Rep_FromCli:
+        {
+            break;
+        }
 
         default:
+        {
             delete outbuf;
             return;
+        }
         }
         server->slotSendMsg(sockd, outbuf, outlen, shPdu);
         delete outbuf;

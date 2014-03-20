@@ -30,7 +30,7 @@ void Server::slotDisconnected(qintptr sockd)
 {
     QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
-    qDebug() << "sockd=" << sockd << "disconnected";
+    qDebug() << "void Server::slotDisconnected(qintptr sockd) - sockd=" << sockd << "disconnected";
     if (clientIt != clientList.end())
     {
         clientList.erase(clientIt);
@@ -42,7 +42,6 @@ void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu
 {
     QByteArray outBa;
     QDataStream outD(&outBa, QIODevice::ReadWrite);
-    qDebug() << "outlen1=[" << outlen << "]";
     outD << shPdu;
     outD.writeRawData(outbuf, outlen);
     outlen = outBa.length();
@@ -50,40 +49,29 @@ void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu
     qint16 shRet;
     chkD >> shPdu;
     chkD >> shRet;
-    qDebug() << shPdu << ", " << shRet << endl;
 
     QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
-        (*clientIt)->write(outBa.data(), (qint64)outlen);
-        qDebug() << "void Server::slotSendMsg() - outlen=[" << outlen << "]";
+        (clientIt.value())->write(outBa.data(), (qint64)outlen);
+        qDebug() << "void Server::slotSendMsg() - outlen=[" << outlen << "], sockd=" << sockd << " ,shPdu=" << shPdu << " ,shRet" << shRet;
     }
 }
 
-void Server::slotDisconnect(qintptr sockd)
-{
-    QMap<qintptr, TcpClientSocket*>::iterator clientIt;
-    clientIt = clientList.find(sockd);
-    if (clientIt != clientList.end())
-    {
-        (*clientIt)->close();
-        clientList.erase(clientIt);
-    }
-}
 
 QByteArray Server::getData(qintptr sockd)
 {
-    qDebug() << "QByteArray Server::getData(qintptr sockd)";
     QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
-        return (*clientIt)->getData();
+        qDebug() << "QByteArray Server::getData(qintptr sockd) - sockd=" << sockd;
+        return (clientIt.value())->getData();
     }
     else
     {
-        qDebug() << "QByteArray Server::getData(qintptr sockd) - is empty";
+        qDebug() << "QByteArray Server::getData(qintptr sockd) - is empty, sockd=" << sockd;
         QByteArray ba;
         ba.clear();
         return ba;
@@ -96,6 +84,6 @@ void Server::setClientUsername(qintptr sockd, char *szUsername, uint len)
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
-        (*clientIt)->setClientName(szUsername, len);
+        (clientIt.value())->setClientName(szUsername, len);
     }
 }
