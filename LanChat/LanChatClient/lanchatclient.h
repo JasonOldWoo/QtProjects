@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QTcpSocket>
 #include <QString>
-#include "userinfo.h"
+#include "LCDBInfo.h"
 #include "signup.h"
 #include "LCPdu.h"
 
@@ -45,9 +45,12 @@ private:
     QString password;
     bool isAuthentication;
     SignUp *signUp;
+    quint32 m_userIndex;
+    UserInfoList friendList;
 
 private:
     void dillAuthInfo(const char *inbuf, uint len);
+    void dillFriendList(const char *inbuf, uint len);
 };
 
 #endif // LANCHATCLIENT_H

@@ -78,6 +78,7 @@ int LanCDB::verifyUser(UserInfo &stru, qintptr &sockd)
     {
         if (sqlQuery->next())
         {
+            stru.dwUserId = (quint32)sqlQuery->value(0).toInt();
             stru.shFlag = (quint16)sqlQuery->value(1).toInt();
             sockd = (qintptr)sqlQuery->value(2).toLongLong();
         }
@@ -137,7 +138,7 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
 {
     std::stringstream oss;
     oss.str("");
-    oss << "select user_name, user_flag, user_ip, from users where user_id in(select user_id_b from userGrant where deal_flag=1 and user_id_a=" << dwUserId;
+    oss << "select user_name, user_flag, user_ip, user_sockd from users where user_id in(select user_id_b from userGrant where deal_flag=1 and user_id_a=" << dwUserId;
     oss << " union select user_id_a from userGrant where deal_flag=1 and user_id_b=" << dwUserId << ")";
 
     qDebug() << "SQL=[" << oss.str().c_str() << "]";
@@ -156,12 +157,42 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
         while (sqlQuery->next())
         {
             UserInfo stru;
-            memset(&stru, 0, sizeof (stru));
-            stru.szUsername = (char *)sqlQuery->value(0).data();
+            stru.szUsername = sqlQuery->value(0).toString();
             stru.shFlag = (qint16)sqlQuery->value(1).toInt();
-            stru.szIp = (char *)sqlQuery->value(2).data();
+            stru.szIp = sqlQuery->value(2).toString();
+            stru.sockd = sqlQuery->value(3).toLongLong();
             strus.push_back(stru);
             dwUserNum++;
+            qDebug() << "int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& strus), sockd=" << stru.sockd;
         }
     }
+    return LCDB_ERR_SUCCESS;
+}
+
+int LanCDB::getUserIdViaSockd(qintptr sockd, quint32 &dwUserId)
+{
+    std::stringstream oss;
+    oss.str("");
+    oss << "select user_id from users where user_sockd=" << sockd;
+    qDebug() << "SQL=[" << oss.str().c_str() << "]";
+    QSqlQuery *sqlQuery = new QSqlQuery(db);
+    if (!sqlQuery->exec((char *)(oss.str().c_str())))
+    {
+        qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
+        qDebug() << db.lastError();
+        return LCDB_ERR_DBDATA_ERROR;
+    }
+
+    if (sqlQuery->numRowsAffected())
+    {
+        if (sqlQuery->next())
+        {
+            dwUserId = (quint32)sqlQuery->value(0).toInt();
+            qDebug() << "int LanCDB::getUserIdViaSockd(qintptr sockd, quint32 &dwUserId), dwUserId=" << dwUserId;
+        }
+    }
+    else
+        return LCDB_ERR_USER_NotExist;
+
+    return LCDB_ERR_SUCCESS;
 }

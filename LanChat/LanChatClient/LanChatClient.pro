@@ -14,13 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         lanchatclient.cpp \
-    signup.cpp \
-    userinfo.cpp
+    signup.cpp
 
 HEADERS  += lanchatclient.h \
     signup.h \
-    userinfo.h \
-    LCPdu.h
+    LCPdu.h \
+    LCDBInfo.h
 
 FORMS    += lanchatclient.ui \
     signup.ui

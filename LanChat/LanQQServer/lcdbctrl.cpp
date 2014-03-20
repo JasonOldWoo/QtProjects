@@ -5,7 +5,7 @@ LCDBCtrl::LCDBCtrl()
     dbc.initialize();
 }
 
-int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr &sockd)
+int LCDBCtrl::DBCUserLogin(const char *inbuf, const uint inlen, char *&outbuf, uint &outlen, qintptr &sockd)
 {
     QByteArray ba((char *)inbuf, inlen);
     QDataStream d(&ba, QIODevice::ReadOnly);
@@ -29,6 +29,8 @@ int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &o
     QByteArray outBa;
     QDataStream outD(&outBa, QIODevice::ReadWrite);
     outD << shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+        outD << stru.dwUserId;
     outlen = outBa.size();
     if (outlen > MAX_OUTBUF_SIZE)
     {
@@ -41,11 +43,11 @@ int LCDBCtrl::DBCUserLogin(const char *inbuf, uint inlen, char *&outbuf, uint &o
     return shRet;
 }
 
-int LCDBCtrl::DBCUserRegister(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
+int LCDBCtrl::DBCUserRegister(const char *inbuf, const uint inlen, char *&outbuf, uint &outlen)
 {
 }
 
-int LCDBCtrl::DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
+int LCDBCtrl::DBCGetFriendList(const char *inbuf, const uint inlen, char *&outbuf, uint &outlen)
 {
     QByteArray ba((char *)inbuf, inlen);
     QDataStream d(&ba, QIODevice::ReadOnly);
@@ -66,13 +68,12 @@ int LCDBCtrl::DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uin
         outD << dwUserNum;
         for (int i=0; i<dwUserNum; i++)
         {
-            QString tmp(strus[i].szUsername);
-            outD << tmp;
+            outD << strus[i].szUsername;
             outD << strus[i].shFlag;
             if (strus[i].shFlag)
             {
-                tmp = strus[i].szIp;
-                outD << tmp;
+                outD << strus[i].szIp;
+                outD << strus[i].sockd;
             }
         }
     }
@@ -88,7 +89,45 @@ int LCDBCtrl::DBCGetFriendList(const char *inbuf, uint inlen, char *&outbuf, uin
     return shRet;
 }
 
+int LCDBCtrl::DBCGetFriendList(qintptr sockd, char *&outbuf, uint &outlen)
+{
+    quint32 dwUserId = 0;
+    qint16 shRet = dbc.getUserIdViaSockd(sockd, dwUserId);
+    qDebug() << "int LCDBCtrl::DBCGetFriendList(qintptr sockd, char *&outbuf, uint &outlen), shRet=" << shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+    {
+        QByteArray inBa;
+        QDataStream inD(&inBa, QIODevice::ReadWrite);
+        inD << dwUserId;
+        return DBCGetFriendList(inBa.data(), inBa.length(), outbuf, outlen);
+    }
+    return shRet;
+}
+
 int LCDBCtrl::DBCUserLogout(qintptr sockd)
 {
     return dbc.updateOffUser(sockd);
+}
+
+void LCDBCtrl::getSockds(const char *inbuf, const uint inlen, QList<qintptr> &sockList)
+{
+    QByteArray ba((char *)inbuf, inlen);
+    QDataStream d(&ba, QIODevice::ReadOnly);
+    quint16 shRet;
+    quint32 dwUserNum;
+    d >> shRet;
+
+    for (quint32 i=0; i<dwUserNum; i++)
+    {
+        UserInfo stru;
+        qintptr sockd;
+        d >> stru.szUsername;
+        d >> stru.shFlag;
+        if (stru.shFlag)
+        {
+            d >> stru.szIp;
+            d >> sockd;
+            sockList.push_back(sockd);
+        }
+    }
 }

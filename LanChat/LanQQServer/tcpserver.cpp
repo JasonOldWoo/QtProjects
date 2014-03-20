@@ -54,6 +54,8 @@ void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
+        while(!(clientIt.value())->isWritable())
+            ;
         (clientIt.value())->write(outBa.data(), (qint64)outlen);
         qDebug() << "void Server::slotSendMsg() - outlen=[" << outlen << "], sockd=" << sockd << " ,shPdu=" << shPdu << " ,shRet" << shRet;
     }

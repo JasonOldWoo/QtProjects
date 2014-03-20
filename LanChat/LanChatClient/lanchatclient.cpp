@@ -177,7 +177,7 @@ void LanChatClient::slotDisconnected()
 void LanChatClient::slotReadData()
 {
     QByteArray ba = socket->readAll();
-    qDebug() << "inlen=[" << ba.size() << "]";
+    qDebug() << "void LanChatClient::slotReadData() - inlen=[" << ba.size() << "]";
     if (ba.size())
     {
         QDataStream d(&ba, QIODevice::ReadOnly);
@@ -192,6 +192,10 @@ void LanChatClient::slotReadData()
         case LCDB_KickUser_Req_ToCli:
             socket->disconnectFromHost();
             QMessageBox::warning(this, tr("Error"), tr("This account has been accessed in another place!"));
+            break;
+        case LCDB_GetFriendList_Rsp_ToCli:
+            dillFriendList(ba.data()+sizeof(shPdu), ba.length()-sizeof(shPdu));
+            break;
         }
     }
 }
@@ -230,7 +234,12 @@ void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
         ui->expandPushButton->setText("+");
         isShow = false;
         ui->widget->setVisible(false);
-
+        inD >> m_userIndex;
+//        QByteArray outBa;
+//        QDataStream outD(&outBa, QIODevice::ReadWrite);
+//        outD << LCDB_GetFriendList_Rep_FromCli;
+//        outD << m_userIndex;
+//        socket->write(outBa.data(), outBa.length());
     }
     else if (LCDB_ERR_DBDATA == shRet)
     {
@@ -246,5 +255,33 @@ void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
     {
         QMessageBox::warning(this, tr("Error"), tr("Username or password wrong!"));
         socket->disconnectFromHost();
+    }
+}
+
+void LanChatClient::dillFriendList(const char *inbuf, uint len)
+{
+    QByteArray inBa(inbuf, len);
+    QDataStream inD(&inBa, QIODevice::ReadOnly);
+    qint16 shRet;
+    inD >> shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+    {
+        quint32 dwUserNum;
+        inD >> dwUserNum;
+        ui->listWidget->clear();
+        friendList.clear();
+        for (quint32 i=0; i < dwUserNum; i++)
+        {
+            UserInfo stru;
+            inD >> stru.szUsername;
+            inD >> stru.shFlag;
+            if (stru.shFlag)
+            {
+                inD >> stru.szIp;
+                inD >> stru.sockd;
+            }
+            ui->listWidget->addItem(stru.szUsername + (stru.shFlag?tr(" [+]"):tr("")));
+            friendList.push_back(stru);
+        }
     }
 }

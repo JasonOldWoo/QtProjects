@@ -27,9 +27,6 @@ private slots:
     void slotDealMsg(qintptr sockd);
     void slotDisconnected(qintptr sockd);
 
-signals:
-    void signalUpdateMsg(QString);
-
 private:
     Ui::LCServer *ui;
     Server *server;
