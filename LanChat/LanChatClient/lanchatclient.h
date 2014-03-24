@@ -43,7 +43,6 @@ private:
     QTcpSocket *socket;
     QString username;
     QString password;
-    bool isAuthentication;
     SignUp *signUp;
     quint32 m_userIndex;
     UserInfoList friendList;

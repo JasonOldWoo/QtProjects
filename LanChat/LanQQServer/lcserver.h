@@ -20,6 +20,8 @@ class LCServer : public QMainWindow
 public:
     explicit LCServer(QWidget *parent = 0);
     ~LCServer();
+    int userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr &sockd);
+    int getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);
 
     
 private slots:
@@ -31,6 +33,7 @@ private:
     Ui::LCServer *ui;
     Server *server;
     LCDBCtrl *dbCtrl;
+    LanCDB *lcdb;
 };
 
 #endif // LANQQSERVER_H

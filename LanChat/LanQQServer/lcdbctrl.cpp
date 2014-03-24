@@ -89,45 +89,8 @@ int LCDBCtrl::DBCGetFriendList(const char *inbuf, const uint inlen, char *&outbu
     return shRet;
 }
 
-int LCDBCtrl::DBCGetFriendList(qintptr sockd, char *&outbuf, uint &outlen)
+int LCDBCtrl::DBCUserLogout(QString szUserName)
 {
-    quint32 dwUserId = 0;
-    qint16 shRet = dbc.getUserIdViaSockd(sockd, dwUserId);
-    qDebug() << "int LCDBCtrl::DBCGetFriendList(qintptr sockd, char *&outbuf, uint &outlen), shRet=" << shRet;
-    if (LCDB_ERR_SUCCESS == shRet)
-    {
-        QByteArray inBa;
-        QDataStream inD(&inBa, QIODevice::ReadWrite);
-        inD << dwUserId;
-        return DBCGetFriendList(inBa.data(), inBa.length(), outbuf, outlen);
-    }
-    return shRet;
+    return dbc.updateOffUser(szUserName);
 }
 
-int LCDBCtrl::DBCUserLogout(qintptr sockd)
-{
-    return dbc.updateOffUser(sockd);
-}
-
-void LCDBCtrl::getSockds(const char *inbuf, const uint inlen, QList<qintptr> &sockList)
-{
-    QByteArray ba((char *)inbuf, inlen);
-    QDataStream d(&ba, QIODevice::ReadOnly);
-    quint16 shRet;
-    quint32 dwUserNum;
-    d >> shRet;
-
-    for (quint32 i=0; i<dwUserNum; i++)
-    {
-        UserInfo stru;
-        qintptr sockd;
-        d >> stru.szUsername;
-        d >> stru.shFlag;
-        if (stru.shFlag)
-        {
-            d >> stru.szIp;
-            d >> sockd;
-            sockList.push_back(sockd);
-        }
-    }
-}

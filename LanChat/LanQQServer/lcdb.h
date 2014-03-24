@@ -25,7 +25,7 @@ public:
     int getFriendList(quint32 dwUserId, quint32 &dwUserNum, UserInfoList &strus);
     int getUserIdViaSockd(qintptr sockd, quint32 &dwUserId);
     int updateUserInfo(UserInfo &stru);
-    int updateOffUser(qintptr sockd);
+    int updateOffUser(QString szUsername);
 
 private:
     QSqlDatabase db;

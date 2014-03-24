@@ -11,7 +11,9 @@ class Server : public QTcpServer
 public:
     explicit Server(QObject *parent = 0, short port = 8888);
     QByteArray getData(qintptr sockd);
-    void setClientUsername(qintptr sockd, char *szUsername, uint len);
+    void setClientUsername(qintptr sockd, QString szClientName);
+    qintptr getSockdViaName(const QString szClientName);
+
     
 signals:
     void signalMsg(qintptr sockd);

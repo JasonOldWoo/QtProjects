@@ -10,8 +10,8 @@ class TcpClientSocket : public QTcpSocket
 public:
     explicit TcpClientSocket(QObject *parent = 0);
     QByteArray getData();
-    void setClientName(const char *szUsername, uint len);
-    const char *getClientName();
+    void setClientName(QString szClientName);
+    QString getClientName();
 
 signals:
     void signalDisconnected(qintptr);
@@ -23,7 +23,7 @@ public slots:
 
 private:
     LinkQueue<QByteArray> inDataList;
-    char m_szClientName[129];
+    QString m_szClientName;
     qintptr sockd;
 
 };

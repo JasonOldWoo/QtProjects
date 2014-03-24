@@ -11,7 +11,13 @@ LCServer::LCServer(QWidget *parent) :
     ui(new Ui::LCServer)
 {
     ui->setupUi(this);
-    dbCtrl = new LCDBCtrl;
+    lcdb = new LanCDB;
+    if (LCDB_ERR_SUCCESS != lcdb->initialize())
+    {
+        qDebug() << "Database initialzation error!";
+        delete lcdb;
+        return ;
+    }
 }
 
 LCServer::~LCServer()
@@ -48,36 +54,14 @@ void LCServer::slotDealMsg(qintptr sockd)
         {
         case LCDB_UserLogin_Rep_FromCli:
         {
-            qintptr tmpSockd = sockd;
-            qint16 shTmpRet = dbCtrl->DBCUserLogin(inbuf, inlen , outbuf, outlen, tmpSockd);
+            qint16 shTmpRet = userLogin(inbuf, inlen , outbuf, outlen, sockd);
             if (LCDB_ERR_USER_Online == shTmpRet)
             {
                 char *outb = NULL;
                 uint outl = 0;
                 server->slotSendMsg(tmpSockd, outb, outl, LCDB_KickUser_Req_ToCli);
-            }
-            else if (LCDB_ERR_SUCCESS == shTmpRet)
-            {
-                server->slotSendMsg(sockd, outbuf, outlen, LCDB_UserLogin_Rsp_ToCli);
-                server->slotSendMsg(sockd, outbuf, outlen, LCDB_UserLogin_Rsp_ToCli);
-                char *outb = new char[MAX_OUTBUF_SIZE];
-                uint outl = 0;
-                dbCtrl->DBCGetFriendList(sockd, outb, outl);
-                server->slotSendMsg(sockd, outb, outl, LCDB_GetFriendList_Rsp_ToCli);
-                qDebug() << "11111111111111111";
-                QList<qintptr> sockList;
-                dbCtrl->getSockds(outb, outl, sockList);
-                QList<qintptr>::iterator sockIt;
-                for (sockIt=sockList.begin(); sockIt!=sockList.end(); sockIt++)
-                {
-                    qDebug() << "222222222222222222222";
-                    if (LCDB_ERR_SUCCESS == dbCtrl->DBCGetFriendList(*sockIt, outb, outl))
-                            server->slotSendMsg(*sockIt, outb, outl, LCDB_GetFriendList_Rsp_ToCli);
-                }
-
                 delete outb;
-                delete outbuf;
-                return ;
+                return;
             }
             shPdu = LCDB_UserLogin_Rsp_ToCli;
             break;
@@ -105,4 +89,78 @@ void LCServer::slotDisconnected(qintptr sockd)
 {
     qDebug() << "LCServer::slotDisconnected()";
     dbCtrl->DBCUserLogout(sockd);
+}
+
+int LCServer::userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr& sockd)
+{
+    QByteArray ba((char *)inbuf, inlen);
+    QDataStream d(&ba, QIODevice::ReadOnly);
+    UserInfo stru;
+    qint16 shRet;
+
+    d >> stru.szUsername;
+    d >> stru.szUserPwd;
+    d >> stru.dwUserType;
+    stru.sockd = sockd;
+
+    shRet = lcdb->verifyUser(stru, sockd);
+
+    if (LCDB_ERR_SUCCESS == shRet)
+        lcdb->updateUserInfo(stru);
+
+    QByteArray outBa;
+    QDataStream outD(&outBa, QIODevice::ReadWrite);
+    outD << shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+    {
+        outD << stru.dwUserId;
+        server->setClientUsername(sockd, stru.szUsername);
+    }
+    outlen = outBa.size();
+    if (outlen > MAX_OUTBUF_SIZE)
+    {
+        delete [](char *)outbuf;
+        outbuf = NULL;
+        outbuf = new char[outlen];
+    }
+    memcpy(outbuf, outBa.data(), outlen);
+    qDebug() << "int LCDBCtrl::DBCUserLogin() - shRet=[" << shRet << "], outlen=[" << outlen << "]";
+    return shRet;
+}
+
+void LCServer::getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
+{
+    QByteArray ba((char *)inbuf, inlen);
+    QDataStream d(&ba, QIODevice::ReadOnly);
+    quint32 dwUserId;
+    quint32 dwUserNum = 0;
+    qint16 shRet;
+    UserInfoList strus;
+    strus.clear();
+
+    d >> dwUserId;
+    shRet = lcdb->getFriendList(dwUserId, dwUserNum, strus);
+
+    QByteArray outBa;
+    QDataStream outD(&outBa, QIODevice::ReadWrite);
+    outD << shRet;
+    if (LCDB_ERR_SUCCESS == shRet)
+    {
+        outD << dwUserNum;
+        for (int i=0; i<dwUserNum; i++)
+        {
+            outD << strus[i].szUsername;
+            outD <<
+        }
+    }
+    outlen = outBa.size();
+    if (outlen > MAX_OUTBUF_SIZE)
+    {
+        delete [](char *)outbuf;
+        outbuf = NULL;
+        outbuf = new char[outlen];
+    }
+    memcpy(outbuf, outBa.data(), outlen);
+    qDebug() << "int LCDBCtrl::DBCGetFriendList - shRet=[" << shRet << "], outlen=[" << outlen << "]";
+    return shRet;
 }

@@ -12,14 +12,11 @@ LanChatClient::LanChatClient(QWidget *parent) :
 //    ui->expandPushButton->setStyleSheet("background-color:#E6E6FA");
 //    ui->loginPushButton->setStyleSheet("background-color:#4169e1");
     isShow = true;
-    isAuthentication = true;
     ui->expandPushButton->setText("-");
     ui->widget->setVisible(true);
     ui->msgTextEdit->setReadOnly(true);
     ui->msgLineEdit->setEnabled(false);
     ui->passwordLineEdit->setEchoMode(QLineEdit::Password);
-
-
 }
 
 LanChatClient::~LanChatClient()
@@ -118,7 +115,6 @@ void LanChatClient::slotSendInfo()
     out << ui->usernameLineEdit->text();
     out << ui->passwordLineEdit->text();
     out << dwUserType;
-    out << socket->localAddress().toString();
     socket->write(ba.data(), (qint64) ba.length());
 //    out << node;
 }

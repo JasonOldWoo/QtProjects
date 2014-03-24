@@ -80,12 +80,21 @@ QByteArray Server::getData(qintptr sockd)
     }
 }
 
-void Server::setClientUsername(qintptr sockd, char *szUsername, uint len)
+void Server::setClientUsername(qintptr sockd, QString szClientName)
 {
     QMap<qintptr, TcpClientSocket*>::iterator clientIt;
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
-        (clientIt.value())->setClientName(szUsername, len);
+        (clientIt.value())->setClientName(szClientName);
+    }
+}
+
+qintptr Server::getSockdViaName(const QString szClientName)
+{
+    QMap<qintptr, TcpClientSocket*>::iterator clientIt;
+    for (clientIt=clientList.begin(); clientIt!=clientList.end(); clientIt++)
+    {
+        (clientIt.value())->getClientName();
     }
 }

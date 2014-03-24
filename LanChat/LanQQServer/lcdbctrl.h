@@ -17,7 +17,7 @@ public:
     int DBCGetFriendList(const char *inbuf, const uint inlen, char *&outbuf, uint &outlen);  // fetch friends of specific user
     int DBCGetFriendList(qintptr sockd, char *&outbuf, uint &outlen);
     int DBCGetUserList(const char *inbuf, const uint inlen, char *&outbuf, uint &outlen);    // fetch all users
-    int DBCUserLogout(qintptr sockd);
+    int DBCUserLogout(QString szUserName);
     void getSockds(const char *inbuf, const uint inlen, QList<qintptr> &sockList);
 
 private:

@@ -19,4 +19,13 @@ typedef struct LCDBUserInfo
 typedef QVector<UserInfo> UserInfoList;
 typedef QVector<UserInfo>::iterator UserInfoListIt;
 
+typedef struct LCDBClientInfo
+{
+    QString clientName;
+    QString clientIp;
+    qintptr clientSockd;
+}ClientInfo;
+typedef QList<ClientInfo> ClientInfoList;
+typedef QList<ClientInfo>::iterator ClientInfoListIt;
+
 #endif // LCDBINFO_H
