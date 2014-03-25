@@ -33,7 +33,7 @@ void LCServer::on_actionStart_Service_triggered()
     server = new Server();
 
     connect(server, SIGNAL(signalMsg(qintptr)), this, SLOT(slotDealMsg(qintptr)));
-    connect(server, SIGNAL(signalDisconnected(qintptr)), this, SLOT(slotDisconnected(qintptr)));
+    connect(server, SIGNAL(signalDisconnected(qintptr, QString)), this, SLOT(slotDisconnected(qintptr, QString)));
 
 }
 
@@ -54,21 +54,21 @@ void LCServer::slotDealMsg(qintptr sockd)
         {
         case LCDB_UserLogin_Rep_FromCli:
         {
-            qint16 shTmpRet = userLogin(inbuf, inlen , outbuf, outlen, sockd);
+            qintptr tmpSockd = sockd;
+            qint16 shTmpRet = userLogin(inbuf, inlen , outbuf, outlen, tmpSockd);
+
             if (LCDB_ERR_USER_Online == shTmpRet)
             {
                 char *outb = NULL;
                 uint outl = 0;
                 server->slotSendMsg(tmpSockd, outb, outl, LCDB_KickUser_Req_ToCli);
-                delete outb;
-                return;
             }
             shPdu = LCDB_UserLogin_Rsp_ToCli;
             break;
         }
         case LCDB_GetFriendList_Rep_FromCli:
         {
-            dbCtrl->DBCGetFriendList(inbuf, inlen, outbuf, outlen);
+            getFriendList(inbuf, inlen, outbuf, outlen);
             shPdu = LCDB_GetFriendList_Rsp_ToCli;
             break;
         }
@@ -85,10 +85,11 @@ void LCServer::slotDealMsg(qintptr sockd)
 }
 
 
-void LCServer::slotDisconnected(qintptr sockd)
+void LCServer::slotDisconnected(qintptr sockd, QString szClientName)
 {
-    qDebug() << "LCServer::slotDisconnected()";
-    dbCtrl->DBCUserLogout(sockd);
+    qDebug() << "LCServer::slotDisconnected(), sockd=" << sockd << ", clientName=" << szClientName;
+    if (szClientName != "NULL")
+        lcdb->updateOffUser(szClientName);
 }
 
 int LCServer::userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr& sockd)
@@ -103,10 +104,22 @@ int LCServer::userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outl
     d >> stru.dwUserType;
     stru.sockd = sockd;
 
-    shRet = lcdb->verifyUser(stru, sockd);
+    qintptr tmpSockd = 0;
+
+    shRet = lcdb->verifyUser(stru);
 
     if (LCDB_ERR_SUCCESS == shRet)
-        lcdb->updateUserInfo(stru);
+    {
+
+        if ((qintptr)(-1) != (tmpSockd=server->getSockdViaName(stru.szUsername)))
+        {
+            qDebug() << "LCServer::userLogin() - user has been online";
+            sockd = tmpSockd;
+            shRet = LCDB_ERR_USER_Online;
+        }
+        else
+            lcdb->updateUserInfo(stru);
+    }
 
     QByteArray outBa;
     QDataStream outD(&outBa, QIODevice::ReadWrite);
@@ -128,7 +141,7 @@ int LCServer::userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outl
     return shRet;
 }
 
-void LCServer::getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
+int LCServer::getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
 {
     QByteArray ba((char *)inbuf, inlen);
     QDataStream d(&ba, QIODevice::ReadOnly);
@@ -149,8 +162,20 @@ void LCServer::getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint 
         outD << dwUserNum;
         for (int i=0; i<dwUserNum; i++)
         {
+            quint16 shFlag;
             outD << strus[i].szUsername;
-            outD <<
+            QString addr = server->getIpViaName(strus[i].szUsername);
+            if ("NULL" == addr)
+            {
+                shFlag = 0;
+                outD << shFlag;
+            }
+            else
+            {
+                shFlag = 1;
+                outD << shFlag;
+                outD << addr;
+            }
         }
     }
     outlen = outBa.size();

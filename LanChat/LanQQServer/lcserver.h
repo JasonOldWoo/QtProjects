@@ -7,7 +7,7 @@
 #include "tcpserver.h"
 #include "tcpclientsocket.h"
 #include "LCPdu.h"
-#include "lcdbctrl.h"
+#include "lcdb.h"
 
 namespace Ui {
 class LCServer;
@@ -27,12 +27,11 @@ public:
 private slots:
     void on_actionStart_Service_triggered();
     void slotDealMsg(qintptr sockd);
-    void slotDisconnected(qintptr sockd);
+    void slotDisconnected(qintptr sockd, QString szClientName);
 
 private:
     Ui::LCServer *ui;
     Server *server;
-    LCDBCtrl *dbCtrl;
     LanCDB *lcdb;
 };
 

@@ -21,7 +21,7 @@ public:
     LanCDB();
     int initialize();
     void loadDBConfig();
-    int verifyUser(UserInfo &stru, qintptr &sockd);
+    int verifyUser(UserInfo &stru);
     int getFriendList(quint32 dwUserId, quint32 &dwUserNum, UserInfoList &strus);
     int getUserIdViaSockd(qintptr sockd, quint32 &dwUserId);
     int updateUserInfo(UserInfo &stru);

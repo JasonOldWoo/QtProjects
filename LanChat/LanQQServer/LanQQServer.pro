@@ -15,7 +15,6 @@ TEMPLATE = app
 SOURCES += main.cpp\
     tcpclientsocket.cpp \
     tcpserver.cpp \
-    lcdbctrl.cpp \
     lcdb.cpp \
     lcserver.cpp
 
@@ -24,7 +23,6 @@ HEADERS  += \
     tcpserver.h \
     DArrQueue.h \
     LCPdu.h \
-    lcdbctrl.h \
     lcdb.h \
     lcserver.h \
     LCDBInfo.h

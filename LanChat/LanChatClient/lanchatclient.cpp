@@ -104,6 +104,8 @@ void LanChatClient::on_loginPushButton_clicked()
 void LanChatClient::slotSendInfo()
 {
 //    UserInfo node;
+    if ("NULL" == ui->usernameLineEdit->text())
+        return ;
     quint16 shPdu = LCDB_UserLogin_Rep_FromCli;
     quint32 dwUserType = 10;
 //    node.setUserInfo(ui->usernameLineEdit->text(),
@@ -116,6 +118,8 @@ void LanChatClient::slotSendInfo()
     out << ui->passwordLineEdit->text();
     out << dwUserType;
     socket->write(ba.data(), (qint64) ba.length());
+    qDebug() << "void LanChatClient::slotSendInfo() - shPdu=" << shPdu  \
+             << ", username=" << ui->usernameLineEdit->text();
 //    out << node;
 }
 
@@ -216,6 +220,7 @@ void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
     QDataStream inD(&inBa, QIODevice::ReadOnly);
     qint16 shRet;
     inD >> shRet;
+    qDebug() << "void LanChatClient::dillAuthInfo() - shRet=" << shRet;
     if (LCDB_ERR_SUCCESS == shRet)
     {
         ui->loginPushButton->setText(tr("LOGOUT"));
@@ -231,11 +236,11 @@ void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
         isShow = false;
         ui->widget->setVisible(false);
         inD >> m_userIndex;
-//        QByteArray outBa;
-//        QDataStream outD(&outBa, QIODevice::ReadWrite);
-//        outD << LCDB_GetFriendList_Rep_FromCli;
-//        outD << m_userIndex;
-//        socket->write(outBa.data(), outBa.length());
+        QByteArray outBa;
+        QDataStream outD(&outBa, QIODevice::ReadWrite);
+        outD << LCDB_GetFriendList_Rep_FromCli;
+        outD << m_userIndex;
+        socket->write(outBa.data(), outBa.length());
     }
     else if (LCDB_ERR_DBDATA == shRet)
     {
@@ -274,7 +279,6 @@ void LanChatClient::dillFriendList(const char *inbuf, uint len)
             if (stru.shFlag)
             {
                 inD >> stru.szIp;
-                inD >> stru.sockd;
             }
             ui->listWidget->addItem(stru.szUsername + (stru.shFlag?tr(" [+]"):tr("")));
             friendList.push_back(stru);

@@ -10,6 +10,7 @@ TcpClientSocket::TcpClientSocket(QObject *parent) :
     connect(this, SIGNAL(disconnected()), SLOT(slotDisconneted()));
     sockd = socketDescriptor();
     qDebug() << "QTcpClientSocket::QTcpClientSoket() - sockd=" << sockd << endl;
+    m_szClientName = "NULL";
 }
 
 
@@ -31,7 +32,7 @@ void TcpClientSocket::slotReadData()
 void TcpClientSocket::slotDisconneted()
 {
     qDebug() << "TcpClientSocket::slotDisconneted() - sockd=" << sockd;
-    emit signalDisconnected(sockd);
+    emit signalDisconnected(sockd, m_szClientName);
 }
 
 QByteArray TcpClientSocket::getData()

@@ -56,11 +56,11 @@ void LanCDB::loadDBConfig()
     /* default for now */
 }
 
-int LanCDB::verifyUser(UserInfo &stru, qintptr &sockd)
+int LanCDB::verifyUser(UserInfo &stru)
 {
     std::stringstream oss;
     oss.str("");
-    oss << "select user_id, user_flag, user_sockd from users where user_name='";
+    oss << "select user_id, user_flag from users where user_name='";
     oss << stru.szUsername.toUtf8().data() << "' and aes_decrypt(user_pwd, 'users.user_pwd')='";
     oss << stru.szUserPwd.toUtf8().data() << "'";
 
@@ -80,7 +80,6 @@ int LanCDB::verifyUser(UserInfo &stru, qintptr &sockd)
         {
             stru.dwUserId = (quint32)sqlQuery->value(0).toInt();
             stru.shFlag = (quint16)sqlQuery->value(1).toInt();
-            sockd = (qintptr)sqlQuery->value(2).toLongLong();
         }
         return LCDB_ERR_SUCCESS;
     }
@@ -92,7 +91,7 @@ int LanCDB::updateUserInfo(UserInfo &stru)
 {
     std::stringstream oss;
     oss.str("");
-    oss << "update users set login_time=current_timestamp, logout_time='0000-00-00 00:00:00' where user_name='" << stru.szUsername.toUtf8().data() << "'";
+    oss << "update users set login_time=current_timestamp, logout_time='0000-00-00 00:00:00', user_flag=1 where user_name='" << stru.szUsername.toUtf8().data() << "'";
 
     qDebug() << "SQL=[" << oss.str().c_str() << "]";
 
@@ -114,7 +113,7 @@ int LanCDB::updateOffUser(QString szUsername)
 {
     std::stringstream oss;
     oss.str("");
-    oss << "update users set logout_time=current_timestamp, user_flag=0 where user_name=" << szUsername.toUtf8().data();
+    oss << "update users set logout_time=current_timestamp, user_flag=0 where user_name='" << szUsername.toUtf8().data() << "'";
     qDebug() << "SQL=[" << oss.str().c_str() << "]";
 
     QSqlQuery *sqlQuery = new QSqlQuery(db);

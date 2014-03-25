@@ -13,16 +13,19 @@ public:
     QByteArray getData(qintptr sockd);
     void setClientUsername(qintptr sockd, QString szClientName);
     qintptr getSockdViaName(const QString szClientName);
+    QString getIpViaSock(qintptr sockd);
+    QString getIpViaName(QString szClientName);
+    QString getNameViaSock(qintptr sockd);
 
     
 signals:
     void signalMsg(qintptr sockd);
-    void signalDisconnected(qintptr sockd);
+    void signalDisconnected(qintptr sockd, QString szClientName);
 
 public slots:
     void incomingConnection(qintptr handle);
     void slotReadMsg(qintptr sockd);
-    void slotDisconnected(qintptr sockd);
+    void slotDisconnected(qintptr sockd, QString szClientName);
     void slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu);
 
 private:

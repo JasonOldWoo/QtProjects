@@ -14,7 +14,7 @@ public:
     QString getClientName();
 
 signals:
-    void signalDisconnected(qintptr);
+    void signalDisconnected(qintptr, QString);
     void signalMsg(qintptr);
 
 public slots:
