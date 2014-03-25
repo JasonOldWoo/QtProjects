@@ -23,6 +23,7 @@ public:
     void loadDBConfig();
     int verifyUser(UserInfo &stru);
     int getFriendList(quint32 dwUserId, quint32 &dwUserNum, UserInfoList &strus);
+    int getFriendList(QString szUsername, quint32 &dwUserNum, UserInfoList &strus);
     int getUserIdViaSockd(qintptr sockd, quint32 &dwUserId);
     int updateUserInfo(UserInfo &stru);
     int updateOffUser(QString szUsername);

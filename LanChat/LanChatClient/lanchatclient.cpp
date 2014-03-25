@@ -172,6 +172,7 @@ void LanChatClient::slotDisconnected()
     isShow = true;
     ui->expandPushButton->setText("-");
     ui->widget->setVisible(true);
+    ui->listWidget->clear();
 }
 
 void LanChatClient::slotReadData()
@@ -196,6 +197,11 @@ void LanChatClient::slotReadData()
         case LCDB_GetFriendList_Rsp_ToCli:
             dillFriendList(ba.data()+sizeof(shPdu), ba.length()-sizeof(shPdu));
             break;
+        case LCDB_NoticeClientUserLogin_Req_ToCli:
+            dillUserLogin(ba.data()+sizeof(shPdu), ba.length()-sizeof(shPdu));
+            break;
+        case LCDB_NoticeClientUserLogout_Req_ToCli:
+            dillUserLogout(ba.data()+sizeof(shPdu), ba.length()-sizeof(shPdu));
         }
     }
 }
@@ -283,5 +289,41 @@ void LanChatClient::dillFriendList(const char *inbuf, uint len)
             ui->listWidget->addItem(stru.szUsername + (stru.shFlag?tr(" [+]"):tr("")));
             friendList.push_back(stru);
         }
+    }
+}
+
+void LanChatClient::dillUserLogin(const char *inbuf, uint len)
+{
+    QByteArray inBa(inbuf, len);
+    QDataStream inD(&inBa, QIODevice::ReadOnly);
+
+    QString szUsername;
+    inD >> szUsername;
+    qDebug() << "void LanChatClient::dillUserLogin() - len=" << inBa.length() << " ,szUsername=" << szUsername;
+
+    QList<QListWidgetItem*> widgetItems = ui->listWidget->findItems(szUsername, Qt::MatchExactly);
+    if (!widgetItems.isEmpty())
+    {
+        qDebug() << "xxxxxxxxxxxxx";
+        widgetItems.at(0)->setText(szUsername + tr(" [+]"));
+        ui->listWidget->editItem(widgetItems.at(0));
+    }
+}
+
+void LanChatClient::dillUserLogout(const char *inbuf, uint len)
+{
+    QByteArray inBa(inbuf, len);
+    QDataStream inD(&inBa, QIODevice::ReadOnly);
+
+    QString szUsername;
+    inD >> szUsername;
+    qDebug() << "void LanChatClient::dillUserLogout() - len=" << inBa.length() << " ,szUsername=" << szUsername;
+
+    QList<QListWidgetItem*> widgetItems = ui->listWidget->findItems(szUsername+tr(" [+]"), Qt::MatchExactly);
+    if (!widgetItems.isEmpty())
+    {
+        qDebug() << "xxxxxxxxxxxxx";
+        widgetItems.at(0)->setText(szUsername);
+        ui->listWidget->editItem(widgetItems.at(0));
     }
 }

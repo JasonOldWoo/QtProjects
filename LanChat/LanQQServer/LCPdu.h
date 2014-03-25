@@ -17,6 +17,8 @@ const quint16 LCDB_AddFriend_Rep_ToCli = 12;
 const quint16 LCDB_GetFriendList_Rep_FromCli = 13;
 const quint16 LCDB_GetFriendList_Rsp_ToCli = 14;
 const quint16 LCDB_KickUser_Req_ToCli = 15;
+const quint16 LCDB_NoticeClientUserLogin_Req_ToCli = 16;
+const quint16 LCDB_NoticeClientUserLogout_Req_ToCli = 17;
 
 
 //=======================================================================

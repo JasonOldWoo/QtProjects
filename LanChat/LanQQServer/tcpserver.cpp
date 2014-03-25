@@ -54,10 +54,30 @@ void Server::slotSendMsg(qintptr sockd, char *outbuf, uint outlen, quint16 shPdu
     clientIt = clientList.find(sockd);
     if (clientIt != clientList.end())
     {
-        while(!(clientIt.value())->isWritable())
-            ;
         (clientIt.value())->write(outBa.data(), (qint64)outlen);
         qDebug() << "void Server::slotSendMsg() - outlen=[" << outlen << "], sockd=" << sockd << " ,shPdu=" << shPdu << " ,shRet" << shRet;
+    }
+}
+
+void Server::slotSendMsg(QString szClientName, char *outbuf, uint outlen, quint16 shPdu)
+{
+    QByteArray outBa;
+    QDataStream outD(&outBa, QIODevice::ReadWrite);
+    outD << shPdu;
+    outD.writeRawData(outbuf, outlen);
+    outlen = outBa.length();
+    QDataStream chkD(&outBa, QIODevice::ReadOnly);
+    chkD >> shPdu;
+
+    QMap<qintptr, TcpClientSocket*>::iterator clientIt = clientList.begin();
+    for (; clientIt!=clientList.end(); clientIt++)
+    {
+        if ((clientIt.value())->getClientName() == szClientName)
+        {
+            (clientIt.value())->write(outBa.data(), (qint64)outlen);
+            qDebug() << "void Server::slotSendMsg(username) - outlen=[" << outlen << "] ,shPdu=" << shPdu;
+            break;
+        }
     }
 }
 

@@ -50,6 +50,8 @@ private:
 private:
     void dillAuthInfo(const char *inbuf, uint len);
     void dillFriendList(const char *inbuf, uint len);
+    void dillUserLogin(const char *inbuf, uint len);
+    void dillUserLogout(const char *inbuf, uint len);
 };
 
 #endif // LANCHATCLIENT_H

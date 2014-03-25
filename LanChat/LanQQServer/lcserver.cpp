@@ -34,6 +34,7 @@ void LCServer::on_actionStart_Service_triggered()
 
     connect(server, SIGNAL(signalMsg(qintptr)), this, SLOT(slotDealMsg(qintptr)));
     connect(server, SIGNAL(signalDisconnected(qintptr, QString)), this, SLOT(slotDisconnected(qintptr, QString)));
+    connect(this, SIGNAL(signalUserLogin(qintptr)), this, SLOT(slotNoticeClientUserLogin(qintptr)));
 
 }
 
@@ -63,6 +64,10 @@ void LCServer::slotDealMsg(qintptr sockd)
                 uint outl = 0;
                 server->slotSendMsg(tmpSockd, outb, outl, LCDB_KickUser_Req_ToCli);
             }
+            else if (LCDB_ERR_SUCCESS ==  shTmpRet)
+            {
+                emit signalUserLogin(sockd);
+            }
             shPdu = LCDB_UserLogin_Rsp_ToCli;
             break;
         }
@@ -89,7 +94,10 @@ void LCServer::slotDisconnected(qintptr sockd, QString szClientName)
 {
     qDebug() << "LCServer::slotDisconnected(), sockd=" << sockd << ", clientName=" << szClientName;
     if (szClientName != "NULL")
+    {
         lcdb->updateOffUser(szClientName);
+        slotNoticeClientUserLogout(szClientName);
+    }
 }
 
 int LCServer::userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr& sockd)
@@ -188,4 +196,69 @@ int LCServer::getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &
     memcpy(outbuf, outBa.data(), outlen);
     qDebug() << "int LCDBCtrl::DBCGetFriendList - shRet=[" << shRet << "], outlen=[" << outlen << "]";
     return shRet;
+}
+
+int LCServer::slotNoticeClientUserLogin(qintptr sockd)
+{
+    qDebug() << "\nint LCServer::slotNoticeClientUserLogin() sockd=" << sockd << "\n\n";
+    QString szUsername = server->getNameViaSock(sockd);
+    if ("NULL" == szUsername)
+        return LCDB_ERR_USER_NotExist;
+    UserInfoList strus;
+    quint32 dwUserNum = 0;
+    qint16 shRet;
+
+    shRet = lcdb->getFriendList(szUsername, dwUserNum, strus);
+
+    if (LCDB_ERR_SUCCESS == shRet && dwUserNum)
+    {
+        QByteArray outBa;
+        QDataStream outD(&outBa, QIODevice::ReadWrite);
+
+        quint16 shPdu = LCDB_NoticeClientUserLogin_Req_ToCli;
+        outD << szUsername;
+
+        for (quint32 i=0; i<dwUserNum; i++)
+        {
+            qDebug() << "int LCServer::slotNoticeClientUserLogin() - shFlag=" << strus[i].shFlag    \
+                     << "clientname=" << strus[i].szUsername << ", username=" << szUsername;
+            if (strus[i].shFlag)
+            {
+                server->slotSendMsg(strus[i].szUsername, outBa.data(), (uint)outBa.length(), shPdu);
+            }
+        }
+    }
+    return LCDB_ERR_SUCCESS;
+}
+
+int LCServer::slotNoticeClientUserLogout(QString szUsername)
+{
+    qDebug() << "\nint LCServer::slotNoticeClientUserLogout() szClientName" << szUsername << "\n\n";
+    if ("NULL" == szUsername)
+        return LCDB_ERR_USER_NotExist;
+    UserInfoList strus;
+    quint32 dwUserNum = 0;
+    qint16 shRet;
+
+    shRet = lcdb->getFriendList(szUsername, dwUserNum, strus);
+
+    if (LCDB_ERR_SUCCESS == shRet && dwUserNum)
+    {
+        QByteArray outBa;
+        QDataStream outD(&outBa, QIODevice::ReadWrite);
+
+        quint16 shPdu = LCDB_NoticeClientUserLogout_Req_ToCli;
+        outD << szUsername;
+
+        for (quint32 i=0; i<dwUserNum; i++)
+        {
+            qDebug() << "int LCServer::slotNoticeClientUserLogout() - shFlag=" << strus[i].shFlag    \
+                     << "clientname=" << strus[i].szUsername << ", username=" << szUsername;
+            if (strus[i].shFlag)
+            {
+                server->slotSendMsg(strus[i].szUsername, outBa.data(), (uint)outBa.length(), shPdu);
+            }
+        }
+    }
+    return LCDB_ERR_SUCCESS;
 }

@@ -20,7 +20,7 @@ int LanCDB::initialize()
     if (!db.open())
     {
         qDebug() << "Connect to MySql error!";
-        qDebug() << db.lastError();
+        qDebug() << db.lastError().databaseText();
         return LCDB_ERR_DBDATA_ERROR;
     }
     qDebug() << "Connect to Mysql successfully!";
@@ -32,7 +32,7 @@ int LanCDB::initialize()
     if (!sqlQuery->exec((char *)(oss.str().c_str())))
     {
         qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
-        qDebug() << db.lastError();
+        qDebug() << sqlQuery->lastError().databaseText();
         return LCDB_ERR_DBDATA_ERROR;
     }
     return LCDB_ERR_SUCCESS;
@@ -70,7 +70,7 @@ int LanCDB::verifyUser(UserInfo &stru)
     if (!sqlQuery->exec((char *)(oss.str().c_str())))
     {
         qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
-        qDebug() << db.lastError();
+        qDebug() << sqlQuery->lastError().databaseText();
         return LCDB_ERR_DBDATA_ERROR;
     }
 
@@ -99,7 +99,7 @@ int LanCDB::updateUserInfo(UserInfo &stru)
     if (!sqlQuery->exec((char *)(oss.str().c_str())))
     {
         qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
-        qDebug() << db.lastError();
+        qDebug() << sqlQuery->lastError().databaseText();
         return LCDB_ERR_DBDATA_ERROR;
     }
 
@@ -120,7 +120,7 @@ int LanCDB::updateOffUser(QString szUsername)
     if (!sqlQuery->exec((char *)(oss.str().c_str())))
     {
         qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
-        qDebug() << db.lastError();
+        qDebug() << sqlQuery->lastError().databaseText();
         return LCDB_ERR_DBDATA_ERROR;
     }
 
@@ -134,7 +134,7 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
 {
     std::stringstream oss;
     oss.str("");
-    oss << "select user_name from users where user_id in(select user_id_b from userGrant where deal_flag=1 and user_id_a=" << dwUserId;
+    oss << "select user_name, user_flag from users where user_id in(select user_id_b from userGrant where deal_flag=1 and user_id_a=" << dwUserId;
     oss << " union select user_id_a from userGrant where deal_flag=1 and user_id_b=" << dwUserId << ")";
 
     qDebug() << "SQL=[" << oss.str().c_str() << "]";
@@ -143,7 +143,7 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
     if (!sqlQuery->exec((char *)(oss.str().c_str())))
     {
         qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
-        qDebug() << db.lastError();
+        qDebug() << sqlQuery->lastError().databaseText();
         return LCDB_ERR_DBDATA_ERROR;
     }
 
@@ -154,10 +154,34 @@ int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& st
         {
             UserInfo stru;
             stru.szUsername = sqlQuery->value(0).toString();
+            stru.shFlag = (quint16)sqlQuery->value(1).toInt();
             strus.push_back(stru);
             dwUserNum++;
             qDebug() << "int LanCDB::getFriendList(quint32 dwUserId, quint32& dwUserNum, UserInfoList& strus), username=" << stru.szUsername;
         }
     }
     return LCDB_ERR_SUCCESS;
+}
+
+int LanCDB::getFriendList(QString szUsername, quint32 &dwUserNum, UserInfoList &strus)
+{
+    std::stringstream oss;
+    oss.str("");
+    oss << "select user_id from users where user_name='" << szUsername.toUtf8().data() << "'";
+    qDebug() << "SQL=[" << oss.str().c_str() << "]";
+
+    QSqlQuery *sqlQuery = new QSqlQuery(db);
+    if (!sqlQuery->exec((char *)(oss.str().c_str())))
+    {
+        qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
+        qDebug() << sqlQuery->lastError().databaseText();
+        return LCDB_ERR_DBDATA_ERROR;
+    }
+    if (sqlQuery->next())
+    {
+        quint32 dwUserId = (quint32) sqlQuery->value(0).toInt();
+        return getFriendList(dwUserId, dwUserNum, strus);
+    }
+
+    return LCDB_ERR_USER_NotExist;
 }

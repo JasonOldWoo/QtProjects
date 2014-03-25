@@ -28,6 +28,11 @@ private slots:
     void on_actionStart_Service_triggered();
     void slotDealMsg(qintptr sockd);
     void slotDisconnected(qintptr sockd, QString szClientName);
+    int slotNoticeClientUserLogin(qintptr sockd);
+    int slotNoticeClientUserLogout(QString szUsername);
+
+signals:
+    void signalUserLogin(qintptr);
 
 private:
     Ui::LCServer *ui;
