@@ -17,6 +17,9 @@ LanChatClient::LanChatClient(QWidget *parent) :
     ui->msgTextEdit->setReadOnly(true);
     ui->msgLineEdit->setEnabled(false);
     ui->passwordLineEdit->setEchoMode(QLineEdit::Password);
+
+    chatSocket = new QUdpSocket;
+    connect(chatSocket, SIGNAL(readyRead()), this, SLOT(slotReadMsg()));
 }
 
 LanChatClient::~LanChatClient()
@@ -133,8 +136,14 @@ void LanChatClient::on_msgLineEdit_returnPressed()
     {
         //QTextStream out(socket);
         //out << ui->msgLineEdit->text();
-        socket->write(ui->msgLineEdit->text().toUtf8().data(),
-                      ui->msgLineEdit->text().toUtf8().length());
+        quint16 shPdu = LCDB_GroupChat_Rep_FromCli;
+        quint32 dwGroupId = 1001;
+        QByteArray ba;
+        QDataStream out(&ba, QIODevice::ReadWrite);
+        out << shPdu;
+        out << dwGroupId;
+        out << ui->msgLineEdit->text();
+        socket->write(ba.data(), (qint64) ba.length());
         ui->msgLineEdit->clear();
     }
 }
@@ -215,9 +224,8 @@ void LanChatClient::slotError()
 void LanChatClient::on_signUpPushButton_clicked()
 {
     qDebug() << "signUp";
-    signUp = new SignUp();
-    signUp->show();
-    this->hide();
+    signUp = new SignUp(this);
+    signUp->exec();
 }
 
 void LanChatClient::dillAuthInfo(const char *inbuf, uint len)
@@ -326,4 +334,20 @@ void LanChatClient::dillUserLogout(const char *inbuf, uint len)
         widgetItems.at(0)->setText(szUsername);
         ui->listWidget->editItem(widgetItems.at(0));
     }
+}
+
+void LanChatClient::slotReadMsg()
+{
+    QByteArray ba = chatSocket->readAll();
+    QDataStream d(&ba, QIODevice::ReadOnly);
+
+    QString szUsername;
+    quint32 dwGroupId;
+    QString msg;
+    d >> szUsername;
+    d >> dwGroupId;
+    d >> msg;
+
+    qDebug() << "void LanChatClient::slotReadMsg() - username=" << szUsername << ", msg=" << msg;
+    ui->msgTextEdit->append(tr("\n_") + szUsername + tr("_ say:\n") + msg + tr("\n\n"));
 }

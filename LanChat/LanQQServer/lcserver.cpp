@@ -11,6 +11,7 @@ LCServer::LCServer(QWidget *parent) :
     ui(new Ui::LCServer)
 {
     ui->setupUi(this);
+    port = 8888;
     lcdb = new LanCDB;
     if (LCDB_ERR_SUCCESS != lcdb->initialize())
     {
@@ -30,7 +31,7 @@ void LCServer::on_actionStart_Service_triggered()
 {
     ui->actionStart_Service->setEnabled(false);
 
-    server = new Server();
+    server = new Server(this, port);
 
     connect(server, SIGNAL(signalMsg(qintptr)), this, SLOT(slotDealMsg(qintptr)));
     connect(server, SIGNAL(signalDisconnected(qintptr, QString)), this, SLOT(slotDisconnected(qintptr, QString)));
@@ -76,6 +77,12 @@ void LCServer::slotDealMsg(qintptr sockd)
             getFriendList(inbuf, inlen, outbuf, outlen);
             shPdu = LCDB_GetFriendList_Rsp_ToCli;
             break;
+        }
+
+        case LCDB_GroupChat_Rep_FromCli:
+        {
+            groupChat(inbuf, inlen, outbuf, outlen);
+            shPdu = LCDB_GroupChat_Rsp_ToCli;
         }
 
         default:
@@ -196,6 +203,32 @@ int LCServer::getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &
     memcpy(outbuf, outBa.data(), outlen);
     qDebug() << "int LCDBCtrl::DBCGetFriendList - shRet=[" << shRet << "], outlen=[" << outlen << "]";
     return shRet;
+}
+
+int LCServer::groupChat(const char *inbuf, uint inlen, char *&outbuf, uint &outlen)
+{
+    QByteArray ba((char *)inbuf, inlen);
+    QDataStream d(&ba, QIODevice::ReadOnly);
+    UserInfo stru;
+    QString msg;
+    quint32 dwGroupId;
+
+    d >> stru.dwUserId;
+    lcdb->getUsername(stru);
+    d >> dwGroupId;
+    d >> msg;
+
+    QByteArray outBa;
+    QDataStream outD();
+
+    qDebug() << "int LCServer::groupChat() - username=" << stru.szUsername << ", group=" << dwGroupId;
+
+    QUdpSocket *udpSocket = new QUdpSocket(this);
+    qint64 len = udpSocket->writeDatagram(ba.data(), ba.length(), QHostAddress::LocalHost, port);
+    if (len)
+        qDebug() << "int LCServer::groupChat() - len=" << len;
+
+    return LCDB_ERR_SUCCESS;
 }
 
 int LCServer::slotNoticeClientUserLogin(qintptr sockd)

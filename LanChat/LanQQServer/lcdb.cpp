@@ -185,3 +185,25 @@ int LanCDB::getFriendList(QString szUsername, quint32 &dwUserNum, UserInfoList &
 
     return LCDB_ERR_USER_NotExist;
 }
+
+int LanCDB::getUsername(UserInfo& stru)
+{
+    std::stringstream oss;
+    oss.str("");
+    oss << "select user_name from users where user_id=" << stru.dwUserId;
+    qDebug() << "SQL=[" << oss.str().c_str() << "]";
+
+    QSqlQuery *sqlQuery = new QSqlQuery(db);
+    if (!sqlQuery->exec((char *)(oss.str().c_str())))
+    {
+        qDebug() << "Err_SQL=[" << oss.str().c_str() << "]";
+        qDebug() << sqlQuery->lastError().databaseText();
+        return LCDB_ERR_DBDATA_ERROR;
+    }
+    if (sqlQuery->next())
+    {
+        stru.szUsername = sqlQuery->value(0).toString();
+        return LCDB_ERR_SUCCESS;
+    }
+    return LCDB_ERR_USER_NotExist;
+}

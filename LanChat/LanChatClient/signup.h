@@ -1,14 +1,13 @@
 #ifndef SIGNUP_H
 #define SIGNUP_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QTcpSocket>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QLabel>
 
-namespace Ui {
-class SignUp;
-}
-
-class SignUp : public QWidget
+class SignUp : public QDialog
 {
     Q_OBJECT
     
@@ -25,8 +24,11 @@ private slots:
     void slotReadData();
     void slotError();
 
+signals:
+    void signalPushButtonClicked();
+
 private:
-    Ui::SignUp *ui;
+    QPushButton *pushButton;
 };
 
 #endif // SIGNUP_H

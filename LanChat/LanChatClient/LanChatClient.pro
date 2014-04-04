@@ -21,5 +21,4 @@ HEADERS  += lanchatclient.h \
     LCPdu.h \
     LCDBInfo.h
 
-FORMS    += lanchatclient.ui \
-    signup.ui
+FORMS    += lanchatclient.ui

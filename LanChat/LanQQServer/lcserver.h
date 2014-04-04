@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QList>
+#include <QUdpSocket>
 #include "tcpserver.h"
 #include "tcpclientsocket.h"
 #include "LCPdu.h"
@@ -22,6 +23,7 @@ public:
     ~LCServer();
     int userLogin(const char *inbuf, uint inlen, char *&outbuf, uint &outlen, qintptr &sockd);
     int getFriendList(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);
+    int groupChat(const char *inbuf, uint inlen, char *&outbuf, uint &outlen);
 
     
 private slots:
@@ -38,6 +40,7 @@ private:
     Ui::LCServer *ui;
     Server *server;
     LanCDB *lcdb;
+    short port;
 };
 
 #endif // LANQQSERVER_H

@@ -1,30 +1,30 @@
 #include "signup.h"
-#include "ui_signup.h"
 #include <QDebug>
 
-SignUp::SignUp(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::SignUp)
+SignUp::SignUp(QWidget *parent): QDialog(parent)
 {
-    ui->setupUi(this);
     qDebug() << "constructor";
+    this->setGeometry(400, 200, 400, 470);
+    pushButton = new QPushButton(this);
+    pushButton->setGeometry(150, 400, 100, 60);
+    connect(pushButton, SIGNAL(clicked()), SLOT(on_pushButton_clicked()));
 }
 
 SignUp::~SignUp()
 {
-    delete ui;
 }
 
 void SignUp::on_pushButton_clicked()
 {
     QTcpSocket signUpSocket();
 //    signUpSocket.connectToHost();
+    emit signalPushButtonClicked();
 }
 
 
 void SignUp::slotHostFound()
 {
-    qDebug() << "host: " + ui->hostLineEdit->text() + " is found";
+    qDebug() << "host is found";
 }
 
 void SignUp::slotConnected()

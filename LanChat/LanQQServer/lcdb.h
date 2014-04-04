@@ -27,6 +27,7 @@ public:
     int getUserIdViaSockd(qintptr sockd, quint32 &dwUserId);
     int updateUserInfo(UserInfo &stru);
     int updateOffUser(QString szUsername);
+    int getUsername(UserInfo& stru);
 
 private:
     QSqlDatabase db;

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTcpSocket>
+#include <QUdpSocket>
 #include <QString>
 #include "LCDBInfo.h"
 #include "signup.h"
@@ -31,6 +32,7 @@ private slots:
     void slotReadData();
     void slotError();
     void slotSendInfo();
+    void slotReadMsg();
 
     void on_signUpPushButton_clicked();
 
@@ -41,6 +43,7 @@ private:
     Ui::LanChatClient *ui;
     bool isShow;
     QTcpSocket *socket;
+    QUdpSocket *chatSocket;
     QString username;
     QString password;
     SignUp *signUp;
